@@ -144,7 +144,7 @@ void TweakSettingsChanged() {
 %hook SBIconListGridLayoutConfiguration
 %property (nonatomic, assign) NSString *location;
 
-%new // findLocation was taken (with the consent of [Burrit0z](https://github.com/Burrit0z)) from https://github.com/Burrit0z/Dockify_Source/blob/master/Dockify.xm#L118-L137 which was Modeled off of Kritanta's solution with ivars - AFAIK one that was used in HomePlus
+%new // findLocation was taken (with the consent of [Burrit0z](https://github.com/Burrit0z)) from https://github.com/Burrit0z/Dockify_Source/blob/4f73f8fdb75f98883b3016a704605d6cd16c7eaa/Dockify.xm#L118-L137 which was Modeled off of Kritanta's solution with ivars - AFAIK one that was used in HomePlus
 - (NSString *)findLocation {
 	if ( self.location ) {
 		return self.location;
