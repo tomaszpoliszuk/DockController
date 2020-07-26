@@ -1,0 +1,86 @@
+{
+	title = "Dock Controller";
+	items = (
+		{
+			cell = PSSwitchCell;
+			key = "enableTweak";
+			label = "Enable Tweak";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
+			label = "Dock Type";
+			footerText = "'Dock Divider' option works only with iPad Dock";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "dockStyle";
+			label = "dockStyle";
+			default = 0;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				9,
+				0,
+				1,
+				2,
+			);
+			validTitles = (
+				Default,
+				iPhone,
+				"iPhone X",
+				iPad,
+			);
+			height = 55;
+		},
+		{
+			cell = PSSwitchCell;
+			key = "showDockBackground";
+			label = "Dock Background";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControllerBackground.png";
+		},
+		{
+			cell = PSSwitchCell;
+			key = "showDockDivider";
+			label = "Dock Divider";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPad.png";
+		},
+		{
+			cell = PSGroupCell;
+			label = "Related Links";
+		},
+		{
+			cell = PSButtonCell;
+			label = "Source Code";
+			action = sourceCode;
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/code.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = "Report Issue @ GitHub";
+			action = reportIssueAtGithub;
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/bug.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = "Tomasz Poliszuk @ Github";
+			action = TomaszPoliszukAtGithub;
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/github.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = "Tomasz Poliszuk @ Twitter";
+			action = TomaszPoliszukAtTwitter;
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/twitter.png";
+		},
+	);
+}

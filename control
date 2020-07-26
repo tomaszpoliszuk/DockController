@@ -1,0 +1,11 @@
+Package: com.tomaszpoliszuk.dockcontroller
+Depends: firmware (>= 13.0), mobilesubstrate, preferenceloader, cy+model.iphone | cy+model.ipod
+Name: Dock Controller
+Version: 1.0
+Architecture: iphoneos-arm
+Description: Control Your Dock
+Author: Tomasz Poliszuk
+Section: Tweaks
+dev: tomaszpoliszuk
+Tag: purpose::extension, compatible::ios13
+Icon: file:///Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockController@3x.png
