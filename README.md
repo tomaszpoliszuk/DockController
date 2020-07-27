@@ -7,9 +7,12 @@
 - Dock Background (enabled, disabled)
 - Dock Divider (enabled, disabled) - iPad Dock Type only
 
+**works also in landscape orientation**
+
 Configure options from Settings.
 
 **Screenshots:**
 
 ![settings](screenshots/dockcontroller1.jpg)
 ![screenshot](screenshots/dockcontroller2.jpg)
+![landscape](screenshots/dockcontroller3.jpg)
