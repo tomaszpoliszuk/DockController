@@ -13,7 +13,6 @@
 		{
 			cell = PSGroupCell;
 			label = "Dock Type";
-			footerText = "'Dock Divider' option works only with iPad Dock";
 		},
 		{
 			cell = PSSegmentCell;
@@ -47,8 +46,10 @@
 		},
 		{
 			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
 			key = "showDockDivider";
 			label = "Dock Divider";
+			sublabel = "'iPad Dock' only";
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";

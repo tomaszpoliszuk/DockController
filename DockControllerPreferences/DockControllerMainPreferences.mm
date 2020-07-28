@@ -3,11 +3,17 @@
 #import <Preferences/PSSpecifier.h>
 #include <spawn.h>
 
+@interface DockControllerTableCell : PSTableCell
+@end
+
 @interface PSControlTableCell : PSTableCell
 - (UIControl *)control;
 @end
 
 @interface PSSwitchTableCell : PSControlTableCell
+@end
+
+@interface DockControllerSwitchTableCell : PSSwitchTableCell
 @end
 
 @interface PSListController (DockController)
@@ -16,6 +22,34 @@
 
 @interface DockControllerMainPreferences : PSListController
 @property (nonatomic, retain) NSMutableDictionary *savedSpecifiers;
+@end
+
+@implementation DockControllerTableCell
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(id)identifier specifier:(id)specifier {
+	return [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier specifier:specifier];
+}
+- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
+	[super refreshCellContentsWithSpecifier:specifier];
+	NSString *sublabel = [specifier propertyForKey:@"sublabel"];
+	if (sublabel) {
+		self.detailTextLabel.text = [sublabel description];
+		self.detailTextLabel.textColor = [UIColor grayColor];
+	}
+}
+@end
+
+@implementation DockControllerSwitchTableCell
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(id)identifier specifier:(id)specifier {
+	return [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier specifier:specifier];
+}
+- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
+	[super refreshCellContentsWithSpecifier:specifier];
+	NSString *sublabel = [specifier propertyForKey:@"sublabel"];
+	if (sublabel) {
+		self.detailTextLabel.text = [sublabel description];
+		self.detailTextLabel.textColor = [UIColor grayColor];
+	}
+}
 @end
 
 @implementation DockControllerMainPreferences
