@@ -2,6 +2,8 @@ NSString *domainString = @"com.tomaszpoliszuk.dockcontroller";
 
 NSMutableDictionary *tweakSettings;
 
+static BOOL haveFaceID;
+
 static BOOL enableTweak;
 
 static long long homeScreenRotationStyle;
@@ -10,9 +12,10 @@ static long long dockStyle;
 static BOOL showDockBackground;
 static BOOL showDockDivider;
 
-static BOOL haveFaceID;
 
 void TweakSettingsChanged() {
+	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
+
 	NSUserDefaults *tweakSettings = [[NSUserDefaults alloc] initWithSuiteName:domainString];
 
 	enableTweak = [([tweakSettings objectForKey:@"enableTweak"] ?: @(YES)) boolValue];
@@ -21,7 +24,6 @@ void TweakSettingsChanged() {
 	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
 
-	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
 }
 
 @interface SBDockView : UIView
@@ -141,6 +143,7 @@ void TweakSettingsChanged() {
 	}
 }
 %end
+
 %hook SBIconListGridLayoutConfiguration
 %property (nonatomic, assign) NSString *location;
 
@@ -177,7 +180,6 @@ void TweakSettingsChanged() {
 		return ( %orig );
 	}
 }
-
 - (UIEdgeInsets)portraitLayoutInsets {
 	UIEdgeInsets origValue = %orig;
 	[self findLocation];
