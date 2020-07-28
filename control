@@ -4,7 +4,11 @@ Name: Dock Controller
 Version: 1.0
 Architecture: iphoneos-arm
 Description: Control Your Dock
+Homepage: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=dockcontrollerDp
+Depiction: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=dockcontrollerDp
+Maintainer: BigBoss <bigboss@thebigboss.org>
 Author: Tomasz Poliszuk
+Sponsor: thebigboss.org <http://thebigboss.org>
 Section: Tweaks
 dev: tomaszpoliszuk
 Tag: purpose::extension, compatible::ios13
