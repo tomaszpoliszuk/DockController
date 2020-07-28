@@ -1,21 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>entry</key>
-	<dict>
-		<key>bundle</key>
-		<string>DockControllerPreferences</string>
-		<key>cell</key>
-		<string>PSLinkCell</string>
-		<key>detail</key>
-		<string>DockControllerMainPreferences</string>
-		<key>icon</key>
-		<string>icons/DockController.png</string>
-		<key>isController</key>
-		<true/>
-		<key>label</key>
-		<string>Dock Controller</string>
-	</dict>
-</dict>
-</plist>
+{
+	entry = {
+		cell = PSLinkCell;
+		isController = 1;
+		label = "Dock Controller";
+		bundle = DockControllerPreferences;
+		detail = DockControllerMainPreferences;
+		icon = icons/DockController.png;
+	};
+}
