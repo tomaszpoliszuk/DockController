@@ -57,6 +57,29 @@
 		},
 		{
 			cell = PSGroupCell;
+			label = "Fix icons layout on Springboard (iPad Dock only)";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "iconsLayoutFix";
+			label = "iconsLayoutFix";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+				2,
+			);
+			validTitles = (
+				"Disabled",
+				"Smaller Dock",
+				"Enabled",
+			);
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
 			label = "Related Links";
 		},
 		{
