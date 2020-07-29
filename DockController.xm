@@ -14,6 +14,9 @@ static BOOL allowMoreIcons;
 
 static BOOL showDockDivider;
 static long long numberOfRecents;
+static long long iconsLayoutFix;
+
+static double iconScale = 0.75;
 
 void TweakSettingsChanged() {
 	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
@@ -28,6 +31,7 @@ void TweakSettingsChanged() {
 
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
+	iconsLayoutFix = [([tweakSettings valueForKey:@"iconsLayoutFix"] ?: @(1)) integerValue];
 }
 
 @interface SBDockView : UIView
@@ -54,10 +58,18 @@ void TweakSettingsChanged() {
 - (NSUInteger)numberOfLandscapeColumns;
 @end
 
+
 @interface SBFloatingDockSuggestionsViewController : UIViewController
 @end
 
 @interface SBFloatingDockSuggestionsModel : NSObject
+@end
+
+@interface SBIconListView : UIView
+- (id)iconLocation;
+@end
+
+@interface SBIconListPageControl : UIPageControl
 @end
 
 %hook SpringBoard
@@ -207,7 +219,7 @@ void TweakSettingsChanged() {
 - (UIEdgeInsets)portraitLayoutInsets {
 	UIEdgeInsets origValue = %orig;
 	[self findLocation];
-	if ( enableTweak && dockStyle == 2 && [self.location isEqualToString:@"Root"] ) {
+	if ( enableTweak && dockStyle == 2 && [self.location isEqualToString:@"Root"] && iconsLayoutFix == 2 ) {
 		UIEdgeInsets newValue = UIEdgeInsetsMake(
 			origValue.top,
 			origValue.left,
@@ -222,7 +234,7 @@ void TweakSettingsChanged() {
 - (UIEdgeInsets)landscapeLayoutInsets {
 	UIEdgeInsets origValue = %orig;
 	[self findLocation];
-	if ( enableTweak && dockStyle == 2 && [self.location isEqualToString:@"Root"] ) {
+	if ( enableTweak && dockStyle == 2 && [self.location isEqualToString:@"Root"] && iconsLayoutFix == 2 ) {
 		UIEdgeInsets newValue = UIEdgeInsetsMake(
 			origValue.top - 10,
 			origValue.left,
@@ -248,11 +260,43 @@ void TweakSettingsChanged() {
 }
 %end
 
+%hook SBIconListPageControl
+- (id)initWithFrame:(CGRect)arg1 {
+	id origValue = %orig;
+	if ( enableTweak && iconsLayoutFix == 1 ) {
+		return NULL;
+	} else {
+		return origValue;
+	}
+}
+%end
+
 %hook SBFloatingDockSuggestionsModel
 - (bool)recentsEnabled {
 	bool origValue = %orig;
 	if ( enableTweak && numberOfRecents == 0) {
 		return NO;
+	} else {
+		return origValue;
+	}
+}
+%end
+
+%hook SBFloatingDockView
++ (void)getMetrics:(CGRect*)arg1 forBounds:(CGRect)arg2 numberOfUserIcons:(unsigned long long)arg3 numberOfRecentIcons:(unsigned long long)arg4 paddingEdgeInsets:(UIEdgeInsets)arg5 referenceIconSize:(CGSize)arg6 maximumIconSize:(CGSize)arg7 referenceInterIconSpacing:(double)arg8 maximumInterIconSpacing:(double)arg9 platterVerticalMargin:(double)arg10 {
+	if ( enableTweak && dockStyle == 2 && iconsLayoutFix == 1 ) {
+		%orig(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 * iconScale, arg9 * iconScale, arg10);
+	} else {
+		%orig;
+	}
+}
+%end
+
+%hook SBIconListView
+-(unsigned long long)iconRowsForCurrentOrientation {
+	long long origValue = %orig;
+	if ( enableTweak && dockStyle == 2 && [self.iconLocation containsString:@"SBIconLocationRoot"] && iconsLayoutFix == 1 ) {
+		return origValue + 1;
 	} else {
 		return origValue;
 	}
