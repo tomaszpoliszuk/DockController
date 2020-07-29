@@ -50,67 +50,14 @@
 			key = "allowMoreIcons";
 			label = "Allow more icons in Dock";
 			sublabel = "5 for iPhone docks, 8 for iPad Dock";
-			default = 0;
-			defaults = com.tomaszpoliszuk.dockcontroller;
-			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-		},
-		{
-			cell = PSSwitchCell;
-			cellClass = DockControllerSwitchTableCell;
-			key = "showDockDivider";
-			label = "Dock Divider";
-			sublabel = "'iPad Dock' only";
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPad.png";
 		},
 		{
-			cell = PSGroupCell;
-			label = "Maximum number of Recents (iPad Dock only)";
-		},
-		{
-			cell = PSSegmentCell;
-			key = "numberOfRecents";
-			default = 3;
-			defaults = com.tomaszpoliszuk.dockcontroller;
-			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			validValues = (
-				0,
-				1,
-				2,
-				3,
-			);
-			validTitles = (
-				0,
-				1,
-				2,
-				3,
-			);
-			height = 55;
-		},
-		{
-			cell = PSGroupCell;
-			label = "Fix icons layout on Springboard (iPad Dock only)";
-		},
-		{
-			cell = PSSegmentCell;
-			key = "iconsLayoutFix";
-			label = "iconsLayoutFix";
-			default = 1;
-			defaults = com.tomaszpoliszuk.dockcontroller;
-			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			validValues = (
-				0,
-				1,
-				2,
-			);
-			validTitles = (
-				"Disabled",
-				"Smaller Dock",
-				"Enabled",
-			);
-			height = 55;
+			cell   = PSLinkCell;
+			label  = "iPad Dock Settings";
+			detail = DockControlleriPadDockPreferences;
 		},
 		{
 			cell = PSGroupCell;

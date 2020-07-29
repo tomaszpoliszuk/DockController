@@ -27,7 +27,7 @@ void TweakSettingsChanged() {
 
 	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(0)) integerValue];
 	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
-	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(NO)) boolValue];
+	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(YES)) boolValue];
 
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];

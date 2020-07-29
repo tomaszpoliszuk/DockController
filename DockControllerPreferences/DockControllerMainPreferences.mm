@@ -24,6 +24,10 @@
 @property (nonatomic, retain) NSMutableDictionary *savedSpecifiers;
 @end
 
+@interface DockControlleriPadDockPreferences : PSListController
+@property (nonatomic, retain) NSMutableDictionary *savedSpecifiers;
+@end
+
 @implementation DockControllerTableCell
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(id)identifier specifier:(id)specifier {
 	return [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier specifier:specifier];
@@ -105,5 +109,14 @@
 	NSString *username = @"tomaszpoliszuk";
 	NSURL *twitterWebsite = [NSURL URLWithString:[@"https://mobile.twitter.com/" stringByAppendingString:username]];
 	[application openURL:twitterWebsite options:@{} completionHandler:nil];
+}
+@end
+
+@implementation DockControlleriPadDockPreferences
+-(NSArray *)specifiers {
+	if (!_specifiers) {
+		_specifiers = [self loadSpecifiersFromPlistName:@"iPadDock" target:self];
+	}
+	return _specifiers;
 }
 @end
