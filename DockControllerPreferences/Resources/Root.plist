@@ -67,6 +67,30 @@
 		},
 		{
 			cell = PSGroupCell;
+			label = "Maximum number of Recents (iPad Dock only)";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "numberOfRecents";
+			default = 3;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+				2,
+				3,
+			);
+			validTitles = (
+				0,
+				1,
+				2,
+				3,
+			);
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
 			label = "Related Links";
 		},
 		{

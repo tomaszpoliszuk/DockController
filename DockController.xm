@@ -13,7 +13,7 @@ static BOOL showDockBackground;
 static BOOL allowMoreIcons;
 
 static BOOL showDockDivider;
-
+static long long numberOfRecents;
 
 void TweakSettingsChanged() {
 	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
@@ -27,6 +27,7 @@ void TweakSettingsChanged() {
 	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(NO)) boolValue];
 
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
+	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
 }
 
 @interface SBDockView : UIView
@@ -51,6 +52,12 @@ void TweakSettingsChanged() {
 - (NSUInteger)numberOfPortraitColumns;
 - (NSUInteger)numberOfLandscapeRows;
 - (NSUInteger)numberOfLandscapeColumns;
+@end
+
+@interface SBFloatingDockSuggestionsViewController : UIViewController
+@end
+
+@interface SBFloatingDockSuggestionsModel : NSObject
 @end
 
 %hook SpringBoard
@@ -223,6 +230,29 @@ void TweakSettingsChanged() {
 			origValue.right
 		);
 		return newValue;
+	} else {
+		return origValue;
+	}
+}
+%end
+
+%hook SBFloatingDockSuggestionsViewController
+- (id)initWithNumberOfRecents:(unsigned long long)arg1 iconController:(id)arg2 applicationController:(id)arg3 layoutStateTransitionCoordinator:(id)arg4 suggestionsModel:(id)arg5 iconViewProvider:(id)arg6 {
+	id origValue = %orig;
+	if ( enableTweak ) {
+		arg1 = numberOfRecents;
+		return %orig;
+	} else {
+		return origValue;
+	}
+}
+%end
+
+%hook SBFloatingDockSuggestionsModel
+- (bool)recentsEnabled {
+	bool origValue = %orig;
+	if ( enableTweak && numberOfRecents == 0) {
+		return NO;
 	} else {
 		return origValue;
 	}
