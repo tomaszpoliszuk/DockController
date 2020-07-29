@@ -10,6 +10,8 @@ static long long homeScreenRotationStyle;
 
 static long long dockStyle;
 static BOOL showDockBackground;
+static BOOL allowMoreIcons;
+
 static BOOL showDockDivider;
 
 
@@ -22,8 +24,9 @@ void TweakSettingsChanged() {
 
 	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(0)) integerValue];
 	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
-	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
+	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(NO)) boolValue];
 
+	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
 }
 
 @interface SBDockView : UIView
@@ -164,10 +167,24 @@ void TweakSettingsChanged() {
 	}
 	return self.location;
 }
+- (NSUInteger)numberOfPortraitColumns {
+	[self findLocation];
+	if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == 2 && allowMoreIcons ) {
+		return ( 8 );
+	} else if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == ( 0 | 1 ) && allowMoreIcons ) {
+		return ( 5 );
+	} else {
+		return ( %orig );
+	}
+}
 - (NSUInteger)numberOfLandscapeRows {
 	[self findLocation];
 	if ( enableTweak && ( ( homeScreenRotationStyle == 1 || homeScreenRotationStyle == 2 ) && dockStyle == 2 ) && [self.location isEqualToString:@"Root"] ) {
 		return ( 3 );
+	} else if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == 2 && allowMoreIcons ) {
+		return ( 8 );
+	} else if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == ( 0 | 1 ) && allowMoreIcons ) {
+		return ( 5 );
 	} else {
 		return ( %orig );
 	}

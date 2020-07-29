@@ -47,6 +47,16 @@
 		{
 			cell = PSSwitchCell;
 			cellClass = DockControllerSwitchTableCell;
+			key = "allowMoreIcons";
+			label = "Allow more icons in Dock";
+			sublabel = "5 for iPhone docks, 8 for iPad Dock";
+			default = 0;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
 			key = "showDockDivider";
 			label = "Dock Divider";
 			sublabel = "'iPad Dock' only";
