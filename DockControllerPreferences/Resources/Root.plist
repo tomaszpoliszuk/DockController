@@ -9,6 +9,7 @@
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
 			height = 55;
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockController.png";
 		},
 		{
 			cell = PSGroupCell;
@@ -53,11 +54,13 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockController5.png";
 		},
 		{
 			cell   = PSLinkCell;
 			label  = "iPad Dock Settings";
 			detail = DockControlleriPadDockPreferences;
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPad.png";
 		},
 		{
 			cell = PSGroupCell;

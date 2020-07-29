@@ -9,11 +9,11 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPad.png";
+			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPadDivider.png";
 		},
 		{
 			cell = PSGroupCell;
-			label = "Maximum number of Recents";
+			label = "Maximum number of Recent applications";
 		},
 		{
 			cell = PSSegmentCell;
