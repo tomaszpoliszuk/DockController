@@ -19,17 +19,19 @@
 			cell = PSSegmentCell;
 			key = "dockStyle";
 			label = "dockStyle";
-			default = 0;
+			default = 999;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
 			validValues = (
-				9,
+				999,
+				404,
 				0,
 				1,
 				2,
 			);
 			validTitles = (
 				Default,
+				Disabled,
 				iPhone,
 				"iPhone X",
 				iPad,
