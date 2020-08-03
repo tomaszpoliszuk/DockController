@@ -263,8 +263,8 @@ void TweakSettingsChanged() {
 %hook SBIconListPageControl
 - (id)initWithFrame:(CGRect)arg1 {
 	id origValue = %orig;
-	if ( enableTweak && iconsLayoutFix == 1 ) {
-		return NULL;
+	if ( enableTweak && iconsLayoutFix == 1 && dockStyle == 2 ) {
+		return nil;
 	} else {
 		return origValue;
 	}
