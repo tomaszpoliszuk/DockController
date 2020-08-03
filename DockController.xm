@@ -25,7 +25,7 @@ void TweakSettingsChanged() {
 
 	enableTweak = [([tweakSettings objectForKey:@"enableTweak"] ?: @(YES)) boolValue];
 
-	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(0)) integerValue];
+	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(999)) integerValue];
 	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
 	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(YES)) boolValue];
 
@@ -297,6 +297,45 @@ void TweakSettingsChanged() {
 	long long origValue = %orig;
 	if ( enableTweak && dockStyle == 2 && [self.iconLocation containsString:@"SBIconLocationRoot"] && iconsLayoutFix == 1 ) {
 		return origValue + 1;
+	} else {
+		return origValue;
+	}
+}
+%end
+
+@interface SBHIconModel : NSObject
+@end
+%hook SBHIconModel
+- (bool)supportsDock {
+	bool origValue = %orig;
+	if ( enableTweak && dockStyle == 404 ) {
+		return NO;
+	} else {
+		return origValue;
+	}
+}
+%end
+@interface SBFolder : NSObject
+@end
+@interface SBRootFolder : SBFolder
+@end
+%hook SBRootFolder
+- (bool)supportsDock {
+	bool origValue = %orig;
+	if ( enableTweak && dockStyle == 404 ) {
+		return NO;
+	} else {
+		return origValue;
+	}
+}
+%end
+@interface SBRootFolderWithDock : SBRootFolder
+@end
+%hook SBRootFolderWithDock
+- (bool)supportsDock {
+	bool origValue = %orig;
+	if ( enableTweak && dockStyle == 404 ) {
+		return NO;
 	} else {
 		return origValue;
 	}
