@@ -9,7 +9,7 @@
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
 			height = 55;
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockController.png";
+			icon = "icons/DockController.png";
 		},
 		{
 			cell = PSGroupCell;
@@ -43,7 +43,7 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControllerBackground.png";
+			icon = "icons/DockControllerBackground.png";
 		},
 		{
 			cell = PSSwitchCell;
@@ -54,13 +54,13 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockController5.png";
+			icon = "icons/DockController5.png";
 		},
 		{
 			cell   = PSLinkCell;
 			label  = "iPad Dock Settings";
 			detail = DockControlleriPadDockPreferences;
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPad.png";
+			icon = "icons/DockControlleriPad.png";
 		},
 		{
 			cell = PSGroupCell;
@@ -70,25 +70,25 @@
 			cell = PSButtonCell;
 			label = "Source Code";
 			action = sourceCode;
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/code.png";
+			icon = "icons/code.png";
 		},
 		{
 			cell = PSButtonCell;
 			label = "Report Issue @ GitHub";
 			action = reportIssueAtGithub;
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/bug.png";
+			icon = "icons/bug.png";
 		},
 		{
 			cell = PSButtonCell;
 			label = "Tomasz Poliszuk @ Github";
 			action = TomaszPoliszukAtGithub;
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/github.png";
+			icon = "icons/github.png";
 		},
 		{
 			cell = PSButtonCell;
 			label = "Tomasz Poliszuk @ Twitter";
 			action = TomaszPoliszukAtTwitter;
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/twitter.png";
+			icon = "icons/twitter.png";
 		},
 	);
 }

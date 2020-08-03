@@ -9,7 +9,7 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "/Library/PreferenceBundles/DockControllerPreferences.bundle/icons/DockControlleriPadDivider.png";
+			icon = "icons/DockControlleriPadDivider.png";
 		},
 		{
 			cell = PSGroupCell;
