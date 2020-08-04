@@ -3,7 +3,7 @@
 **Requires iOS greater or equal to 13 and iPhone or iPod Touch device**
 
 **Possibilities:**
-- Choose Dock Type (Default, iPhone, iPhone X, iPad)
+- Choose Dock Type (Default, Disabled, iPhone, iPhone X, iPad)
 - Dock Background (enabled, disabled)
 - Allow more icons in Dock (5 for iPhone docks, 8 for iPad Dock)
 - iPad Dock Type options:

@@ -38,8 +38,12 @@
 		{
 			cell = PSGroupCell;
 			label = "Fix icons layout on Springboard";
-			footerText = "By default when 'iPad Dock' is enabled icons on Springboard are distributed like there is no dock anymore.
+			footerText = "'Smaller Dock' option will disable pagination dots.
+
+By default when 'iPad Dock' is enabled icons on Springboard are distributed like there is no dock anymore.
+
 This options exists and fully supports Landscape position but if you use tweak to control icon layout it could cause unwanted effects.
+
 In that case please disable either this option or icon layout changes in that other tweak.";
 		},
 		{

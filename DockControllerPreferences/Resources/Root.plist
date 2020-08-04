@@ -45,7 +45,7 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "icons/DockControllerBackground.png";
+			icon = "icons/DockControllerNoBackground.png";
 		},
 		{
 			cell = PSSwitchCell;
@@ -56,7 +56,7 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "icons/DockController5.png";
+			icon = "icons/DockControllerMoreIcons.png";
 		},
 		{
 			cell   = PSLinkCell;
