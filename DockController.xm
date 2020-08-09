@@ -117,27 +117,44 @@ void TweakSettingsChanged() {
 %end
 
 %hook SBDockView
--(void)layoutSubviews {
-	%orig();
-	UIImageView *_backgroundImageView = MSHookIvar<UIImageView *>(self, "_backgroundImageView");
-	if ( _backgroundImageView != nil && enableTweak && dockStyle == 0 && haveFaceID ) {
-		_backgroundImageView.layer.cornerRadius = 0;
-		CGRect frame = _backgroundImageView.frame;
-		frame.origin.x = 0;
-		frame.origin.y = 0;
-		frame.size.width = self.frame.size.width + 20;
-		frame.size.height = self.frame.size.height + 20;
-		_backgroundImageView.frame = frame;
++ (double)defaultHeight {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
+		return 96.000000;
+	} else {
+		return origValue;
 	}
-	SBWallpaperEffectView *_backgroundView = MSHookIvar<SBWallpaperEffectView *>(self, "_backgroundView");
-	if ( _backgroundView != nil && enableTweak && dockStyle == 0 && haveFaceID ) {
-		_backgroundView.layer.cornerRadius = 0;
-		CGRect frame = _backgroundView.frame;
-		frame.origin.x = 0;
-		frame.origin.y = 0;
-		frame.size.width = self.frame.size.width + 20;
-		frame.size.height = self.frame.size.height + 20;
-		_backgroundView.frame = frame;
+}
+- (double)dockHeight {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
+		return 96.000000;
+	} else {
+		return origValue;
+	}
+}
+- (bool)isDockInset {
+	bool origValue = %orig;
+	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
+		return NO;
+	} else {
+		return origValue;
+	}
+}
++ (double)defaultHeightPadding {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
+		return 4.000000;
+	} else {
+		return origValue;
+	}
+}
+- (double)dockHeightPadding {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
+		return 4.000000;
+	} else {
+		return origValue;
 	}
 }
 - (id)backgroundView {
