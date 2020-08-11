@@ -72,6 +72,16 @@ void TweakSettingsChanged() {
 @interface SBIconListPageControl : UIPageControl
 @end
 
+@interface SBHIconModel : NSObject
+@end
+
+@interface SBFolder : NSObject
+@end
+@interface SBRootFolder : SBFolder
+@end
+@interface SBRootFolderWithDock : SBRootFolder
+@end
+
 %hook SpringBoard
 -(long long)homeScreenRotationStyle {
 //	0 = iPhone (no rotation)
@@ -320,8 +330,6 @@ void TweakSettingsChanged() {
 }
 %end
 
-@interface SBHIconModel : NSObject
-@end
 %hook SBHIconModel
 - (bool)supportsDock {
 	bool origValue = %orig;
@@ -332,10 +340,7 @@ void TweakSettingsChanged() {
 	}
 }
 %end
-@interface SBFolder : NSObject
-@end
-@interface SBRootFolder : SBFolder
-@end
+
 %hook SBRootFolder
 - (bool)supportsDock {
 	bool origValue = %orig;
@@ -346,8 +351,7 @@ void TweakSettingsChanged() {
 	}
 }
 %end
-@interface SBRootFolderWithDock : SBRootFolder
-@end
+
 %hook SBRootFolderWithDock
 - (bool)supportsDock {
 	bool origValue = %orig;
