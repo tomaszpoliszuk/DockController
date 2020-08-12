@@ -104,17 +104,6 @@ void TweakSettingsChanged() {
 }
 %end
 
-%hook UITraitCollection
-- (CGFloat)displayCornerRadius {
-	CGFloat origValue = %orig;
-	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 6;
-	} else {
-		return origValue;
-	}
-}
-%end
-
 %hook SBFloatingDockPlatterView
 - (id)backgroundView {
 	id origValue = %orig;
@@ -131,6 +120,8 @@ void TweakSettingsChanged() {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
 		return 96.000000;
+	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		return 92.000000;
 	} else {
 		return origValue;
 	}
@@ -139,6 +130,8 @@ void TweakSettingsChanged() {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
 		return 96.000000;
+	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		return 103.666667;
 	} else {
 		return origValue;
 	}
@@ -147,6 +140,8 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
 		return NO;
+	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		return YES;
 	} else {
 		return origValue;
 	}
@@ -163,6 +158,8 @@ void TweakSettingsChanged() {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
 		return 4.000000;
+	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		return 0.000000;
 	} else {
 		return origValue;
 	}
