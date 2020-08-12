@@ -35,6 +35,19 @@
 			);
 			height = 55;
 		},
+ 		{
+			cell = PSGroupCell;
+			footerText = "This option works only on devices with enabled modern multitasking gestures";
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
+			key = "isFloatingDockGesturePossible";
+			label = "Gesture to show Dock in Apps";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
 		{
 			cell = PSGroupCell;
 			label = "Fix icons layout on Springboard";

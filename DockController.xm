@@ -18,6 +18,8 @@ static long long iconsLayoutFix;
 
 static double iconScale = 0.75;
 
+static BOOL isFloatingDockGesturePossible;
+
 void TweakSettingsChanged() {
 	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
 
@@ -32,7 +34,13 @@ void TweakSettingsChanged() {
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
 	iconsLayoutFix = [([tweakSettings valueForKey:@"iconsLayoutFix"] ?: @(1)) integerValue];
+	isFloatingDockGesturePossible = [([tweakSettings objectForKey:@"isFloatingDockGesturePossible"] ?: @(YES)) boolValue];
 }
+
+@interface BSPlatform : NSObject
++ (id)sharedInstance;
+- (long long)homeButtonType;
+@end
 
 @interface SBDockView : UIView
 @property (nonatomic, retain) UIView *backgroundView;
@@ -80,6 +88,9 @@ void TweakSettingsChanged() {
 @interface SBRootFolder : SBFolder
 @end
 @interface SBRootFolderWithDock : SBRootFolder
+@end
+
+@interface SBFluidSwitcherViewController : UIViewController
 @end
 
 %hook SpringBoard
@@ -354,6 +365,18 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 404 ) {
 		return NO;
+	} else {
+		return origValue;
+	}
+}
+%end
+
+%hook SBFluidSwitcherViewController
+- (bool)isFloatingDockGesturePossible {
+	bool origValue = %orig;
+	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+	if ( enableTweak && platform.homeButtonType == 2 ) {
+		return isFloatingDockGesturePossible;
 	} else {
 		return origValue;
 	}

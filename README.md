@@ -9,6 +9,7 @@
 - iPad Dock Type options:
 - - Dock Divider (enabled, disabled)
 - - Maximum number of Recent applications (0 - 3)
+- - Option to disable dock inside apps for devices witch modern multitasking gestures enabled
 - - Fix icons layout on Springboard (enabled, smaller dock, disabled)
 
 **works also in landscape orientation**
