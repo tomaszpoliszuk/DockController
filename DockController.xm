@@ -190,6 +190,12 @@ void TweakSettingsChanged() {
 		%orig;
 	}
 }
+-(void)layoutSubviews {
+	%orig();
+	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		self.backgroundView.layer.cornerRadius = 30;
+	}
+}
 %end
 
 %hook SBFloatingDockView
