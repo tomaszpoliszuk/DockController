@@ -3,9 +3,9 @@ ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
 
-BUNDLE_NAME = DockControllerPreferences
+BUNDLE_NAME = DockControllerSettings
 
-$(BUNDLE_NAME)_FILES = DockControllerMainPreferences.mm
+$(BUNDLE_NAME)_FILES = DockControllerMainSettings.mm
 $(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 $(BUNDLE_NAME)_FRAMEWORKS = UIKit
 $(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences

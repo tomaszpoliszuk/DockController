@@ -3,8 +3,8 @@
 		cell = PSLinkCell;
 		isController = 1;
 		label = "Dock Controller";
-		bundle = DockControllerPreferences;
-		detail = DockControllerMainPreferences;
+		bundle = DockControllerSettings;
+		detail = DockControllerMainSettings;
 		icon = icons/DockController.png;
 	};
 }

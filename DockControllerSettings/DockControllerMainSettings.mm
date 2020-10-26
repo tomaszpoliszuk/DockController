@@ -40,7 +40,7 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 -(BOOL)containsSpecifier:(id)arg1;
 @end
 
-@interface DockControllerMainPreferences : PSListController {
+@interface DockControllerMainSettings : PSListController {
 	NSMutableArray *removeSpecifiers;
 }
 @property (nonatomic, retain) NSMutableDictionary *savedSpecifiers;
@@ -74,7 +74,7 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 }
 @end
 
-@implementation DockControllerMainPreferences
+@implementation DockControllerMainSettings
 -(NSArray *)specifiers {
 	if (!_specifiers) {
 		_specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
