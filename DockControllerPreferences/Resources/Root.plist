@@ -3,13 +3,13 @@
 	items = (
 		{
 			cell = PSSwitchCell;
-			key = "enableTweak";
-			label = "Enable Tweak";
+			key = enableTweak;
+			label = ENABLE_TWEAK;
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			height = 55;
 			icon = "icons/DockController.png";
+			height = 55;
 		},
 		{
 			cell = PSGroupCell;
@@ -32,8 +32,8 @@
 			validTitles = (
 				Default,
 				Disabled,
-				iPhone,
-				"iPhone X",
+				Square,
+				Rounded,
 				iPad,
 			);
 			height = 55;
@@ -45,50 +45,140 @@
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "icons/DockControllerNoBackground.png";
 		},
 		{
 			cell = PSSwitchCell;
 			cellClass = DockControllerSwitchTableCell;
 			key = "allowMoreIcons";
 			label = "Allow more icons in Dock";
-			sublabel = "5 for iPhone docks, 8 for iPad Dock";
+			sublabel = "8 for iPad Dock 5 for rest of them";
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-			icon = "icons/DockControllerMoreIcons.png";
 		},
 		{
-			cell   = PSLinkCell;
-			label  = "iPad Dock Settings";
-			detail = DockControlleriPadDockPreferences;
-			icon = "icons/DockControlleriPad.png";
+			cell = PSLinkCell;
+			label = "iPad Dock Settings";
+			detail = "PSListController";
+			title = "iPad Dock Settings";
+			items = (
+				{
+					cell = PSSwitchCell;
+					cellClass = DockControllerSwitchTableCell;
+					key = "showDockDivider";
+					label = "Dock Divider";
+					default = 1;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+				},
+				{
+					cell = PSGroupCell;
+					label = "Maximum number of Recent applications";
+					footerText = "Please note that for now selecting 1 or 2 is partially broken - you will see correct number of recent apps but sometimes last used app will be that hidden icon.
+
+I'm working on fixing this issue.";
+				},
+				{
+					cell = PSSegmentCell;
+					key = "numberOfRecents";
+					default = 3;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+					validValues = (
+						0,
+						1,
+						2,
+						3,
+					);
+					validTitles = (
+						0,
+						1,
+						2,
+						3,
+					);
+					height = 55;
+				},
+				{
+					cell = PSGroupCell;
+					footerText = "This option works only on devices with enabled modern multitasking gestures";
+				},
+				{
+					cell = PSSwitchCell;
+					cellClass = DockControllerSwitchTableCell;
+					key = "isFloatingDockGesturePossible";
+					label = "Gesture to show Dock in Apps";
+					default = 1;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+				},
+				{
+					cell = PSGroupCell;
+					label = "Fix icons layout on Springboard";
+					footerText = "Turn on those options if you eperience incorrect icon layout on springboard and don't use any tweak that changes that layout.
+
+Landscape fix is incompatible with homescreen widgets on iOS 14";
+				},
+				{
+					cell = PSSwitchCell;
+					cellClass = DockControllerSwitchTableCell;
+					key = iPadIconsLayoutFixInPortrait;
+					label = "for Portrait orientation";
+					default = 1;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+				},
+				{
+					cell = PSSwitchCell;
+					cellClass = DockControllerSwitchTableCell;
+					key = iPadIconsLayoutFixInLandscape;
+					label = "for Landscape orientation";
+					default = 0;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+				},
+			);
 		},
 		{
 			cell = PSGroupCell;
-			label = "Related Links";
+			label = " ";
 		},
 		{
 			cell = PSButtonCell;
-			label = "Source Code";
+			label = RESET_SETTINGS;
+			action = resetSettings;
+			alignment = center;
+		},
+		{
+			cell = PSGroupCell;
+			label = RELATED_LINKS;
+		},
+		{
+			cell = PSButtonCell;
+			label = SOURCE_CODE;
 			action = sourceCode;
 			icon = "icons/code.png";
 		},
 		{
 			cell = PSButtonCell;
-			label = "Report Issue @ GitHub";
-			action = reportIssueAtGithub;
+			label = KNOWN_ISSUES;
+			action = knownIssues;
 			icon = "icons/bug.png";
 		},
 		{
 			cell = PSButtonCell;
-			label = "Tomasz Poliszuk @ Github";
+			label = TOMASZ_POLISZUK_AT_BIGBOSS;
+			action = TomaszPoliszukAtBigBoss;
+			icon = "icons/packages.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = TOMASZ_POLISZUK_AT_GITHUB;
 			action = TomaszPoliszukAtGithub;
 			icon = "icons/github.png";
 		},
 		{
 			cell = PSButtonCell;
-			label = "Tomasz Poliszuk @ Twitter";
+			label = TOMASZ_POLISZUK_AT_TWITTER;
 			action = TomaszPoliszukAtTwitter;
 			icon = "icons/twitter.png";
 		},

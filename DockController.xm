@@ -1,4 +1,33 @@
-NSString *domainString = @"com.tomaszpoliszuk.dockcontroller";
+#define isiOS14OrAbove (kCFCoreFoundationVersionNumber >= 1740.00)
+
+@interface SBDockView : UIView
+@property (nonatomic, retain) UIView *backgroundView;
+@end
+
+@interface SBIconListView : UIView
+- (id)layout;
+- (id)iconLocation;
+@end
+
+@interface SBIconListGridLayout : NSObject
+@end
+@interface SBIconListFlowLayout : SBIconListGridLayout
+- (id)layoutConfiguration;
+@end
+
+@interface SBIconListGridLayoutConfiguration : NSObject
+- (void)setNumberOfLandscapeColumns:(unsigned long long)arg1;
+- (void)setNumberOfLandscapeRows:(unsigned long long)arg1;
+- (void)setNumberOfPortraitColumns:(unsigned long long)arg1;
+- (void)setNumberOfPortraitRows:(unsigned long long)arg1;
+@end
+
+@interface BSPlatform : NSObject
++ (id)sharedInstance;
+- (long long)homeButtonType;
+@end
+
+NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 
 NSMutableDictionary *tweakSettings;
 
@@ -6,17 +35,14 @@ static BOOL haveFaceID;
 
 static BOOL enableTweak;
 
-static long long homeScreenRotationStyle;
-
 static long long dockStyle;
 static BOOL showDockBackground;
 static BOOL allowMoreIcons;
 
 static BOOL showDockDivider;
 static long long numberOfRecents;
-static long long iconsLayoutFix;
-
-static double iconScale = 0.75;
+static bool iPadIconsLayoutFixInPortrait;
+static bool iPadIconsLayoutFixInLandscape;
 
 static BOOL isFloatingDockGesturePossible;
 
@@ -30,88 +56,24 @@ void TweakSettingsChanged() {
 	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(999)) integerValue];
 	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
 	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(YES)) boolValue];
+	if (isiOS14OrAbove) {
+		allowMoreIcons = NO;
+	}
 
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
-	iconsLayoutFix = [([tweakSettings valueForKey:@"iconsLayoutFix"] ?: @(1)) integerValue];
+	iPadIconsLayoutFixInPortrait = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInPortrait"] ?: @(YES)) boolValue];
+	iPadIconsLayoutFixInLandscape = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInLandscape"] ?: @(NO)) boolValue];
 	isFloatingDockGesturePossible = [([tweakSettings objectForKey:@"isFloatingDockGesturePossible"] ?: @(YES)) boolValue];
 }
-
-@interface BSPlatform : NSObject
-+ (id)sharedInstance;
-- (long long)homeButtonType;
-@end
-
-@interface SBDockView : UIView
-@property (nonatomic, retain) UIView *backgroundView;
-@end
-
-@interface SBWallpaperEffectView : UIView
-@end
-
-@interface SBFloatingDockPlatterView : UIView
-@end
-
-@interface SBFTouchPassThroughView : UIView
-@end
-@interface SBFloatingDockView : SBFTouchPassThroughView
-@end
-
-@interface SBIconListGridLayoutConfiguration : NSObject
-@property (nonatomic, assign) NSString *location;
-- (NSString *)findLocation;
-- (NSUInteger)numberOfPortraitRows;
-- (NSUInteger)numberOfPortraitColumns;
-- (NSUInteger)numberOfLandscapeRows;
-- (NSUInteger)numberOfLandscapeColumns;
-@end
-
-
-@interface SBFloatingDockSuggestionsViewController : UIViewController
-@end
-
-@interface SBFloatingDockSuggestionsModel : NSObject
-@end
-
-@interface SBIconListView : UIView
-- (id)iconLocation;
-@end
-
-@interface SBIconListPageControl : UIPageControl
-@end
-
-@interface SBHIconModel : NSObject
-@end
-
-@interface SBFolder : NSObject
-@end
-@interface SBRootFolder : SBFolder
-@end
-@interface SBRootFolderWithDock : SBRootFolder
-@end
-
-@interface SBFluidSwitcherViewController : UIViewController
-@end
-
-%hook SpringBoard
--(long long)homeScreenRotationStyle {
-//	0 = iPhone (no rotation)
-//	1 = iPad (rotate icons and dock)
-//	2 = iPhone + (rotate icons, dock stays in place)
-	long long origValue = %orig;
-	homeScreenRotationStyle = origValue;
-	return origValue;
-}
-%end
 
 %hook SBFloatingDockController
 + (bool)isFloatingDockSupported {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 2 ) {
 		return YES;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
@@ -120,9 +82,8 @@ void TweakSettingsChanged() {
 	id origValue = %orig;
 	if ( enableTweak && !showDockBackground ) {
 		return nil;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
@@ -130,22 +91,20 @@ void TweakSettingsChanged() {
 + (double)defaultHeight {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 96.000000;
+		return 96;
 	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 92.000000;
-	} else {
-		return origValue;
+		return 92;
 	}
+	return origValue;
 }
 - (double)dockHeight {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 96.000000;
+		return 96;
 	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 103.666667;
-	} else {
-		return origValue;
+		return 92;
 	}
+	return origValue;
 }
 - (bool)isDockInset {
 	bool origValue = %orig;
@@ -153,44 +112,39 @@ void TweakSettingsChanged() {
 		return NO;
 	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
 		return YES;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 + (double)defaultHeightPadding {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 4.000000;
-	} else {
-		return origValue;
+		return 4;
 	}
+	return origValue;
 }
 - (double)dockHeightPadding {
 	double origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 4.000000;
+		return 4;
 	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 0.000000;
-	} else {
-		return origValue;
+		return 0;
 	}
+	return origValue;
 }
 - (id)backgroundView {
 	id origValue = %orig;
 	if ( enableTweak && !showDockBackground ) {
 		return nil;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 - (void)setBackgroundAlpha:(double)arg1 {
 	if ( enableTweak && !showDockBackground ) {
-		%orig(0);
-	} else {
-		%orig;
+		arg1 = 0;
 	}
+	%orig;
 }
--(void)layoutSubviews {
+- (void)didMoveToWindow {
 	%orig();
 	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
 		self.backgroundView.layer.cornerRadius = 30;
@@ -201,114 +155,143 @@ void TweakSettingsChanged() {
 %hook SBFloatingDockView
 - (void)updateDividerVisualStyling {
 	if ( enableTweak && !showDockDivider && dockStyle == 2 ) {
-	} else {
-		%orig;
+		return;
 	}
+	%orig;
+}
+- (double)maximumInterIconSpacing {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 2 ) {
+		return 13;
+	}
+	return origValue;
+}
+- (double)platterVerticalMargin {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 2 ) {
+		return 5;
+	}
+	return origValue;
+}
+- (double)contentHeight {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 2 ) {
+		return origValue - 10;
+	}
+	return origValue;
 }
 %end
 
-%hook SBIconListGridLayoutConfiguration
-%property (nonatomic, assign) NSString *location;
-
-%new // findLocation was taken (with the consent of [Burrit0z](https://github.com/Burrit0z)) from https://github.com/Burrit0z/Dockify_Source/blob/4f73f8fdb75f98883b3016a704605d6cd16c7eaa/Dockify.xm#L118-L137 which was Modeled off of Kritanta's solution with ivars - AFAIK one that was used in HomePlus
-- (NSString *)findLocation {
-	if ( self.location ) {
-		return self.location;
-	} else {
-		NSUInteger rows = MSHookIvar<NSUInteger>( self, "_numberOfPortraitRows" );
-		NSUInteger columns = MSHookIvar<NSUInteger>( self, "_numberOfPortraitColumns" );
-		if ( rows < 3 && columns == 4 ) {
-			self.location =  @"Dock";
-		} else if ( ( rows == 3 && columns == 3 ) || ( rows == 4 && columns == 4 ) ) {
-			self.location =  @"Folder";
-		} else {
-			self.location =  @"Root";
+%hook SBIconListView
+-(void)layoutSubviews {
+	if ( enableTweak ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationRoot" ] && dockStyle == 2 && iPadIconsLayoutFixInLandscape ) {
+			SBIconListFlowLayout *iconListFlowLayout = [self layout];
+			if ( [iconListFlowLayout isKindOfClass:%c(SBIconListFlowLayout)] ) {
+				SBIconListGridLayoutConfiguration *iconListGridLayoutConfiguration = iconListFlowLayout.layoutConfiguration;
+				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
+					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:3];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:8];
+				}
+			}
+		}
+		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
+			SBIconListFlowLayout *iconListFlowLayout = [self layout];
+			if ( [iconListFlowLayout isKindOfClass:%c(SBIconListFlowLayout)] ) {
+				SBIconListGridLayoutConfiguration *iconListGridLayoutConfiguration = iconListFlowLayout.layoutConfiguration;
+				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
+					[iconListGridLayoutConfiguration setNumberOfPortraitColumns:5];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:5];
+				}
+			}
+		}
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDock" ] && dockStyle == 2 && allowMoreIcons ) {
+			SBIconListFlowLayout *iconListFlowLayout = [self layout];
+			if ( [iconListFlowLayout isKindOfClass:%c(SBIconListFlowLayout)] ) {
+				SBIconListGridLayoutConfiguration *iconListGridLayoutConfiguration = iconListFlowLayout.layoutConfiguration;
+				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
+					[iconListGridLayoutConfiguration setNumberOfPortraitRows:1];
+					[iconListGridLayoutConfiguration setNumberOfPortraitColumns:8];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:8];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:1];
+				}
+			}
+		}
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+			SBIconListFlowLayout *iconListFlowLayout = [self layout];
+			if ( [iconListFlowLayout isKindOfClass:%c(SBIconListFlowLayout)] ) {
+				SBIconListGridLayoutConfiguration *iconListGridLayoutConfiguration = iconListFlowLayout.layoutConfiguration;
+				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
+					[iconListGridLayoutConfiguration setNumberOfPortraitRows:1];
+					[iconListGridLayoutConfiguration setNumberOfPortraitColumns:numberOfRecents];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:numberOfRecents];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:1];
+				}
+			}
 		}
 	}
-	return self.location;
+	%orig;
 }
-- (NSUInteger)numberOfPortraitColumns {
-	[self findLocation];
-	if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == 2 && allowMoreIcons ) {
-		return ( 8 );
-	} else if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == ( 0 | 1 ) && allowMoreIcons ) {
-		return ( 5 );
-	} else {
-		return ( %orig );
+- (unsigned long long)maximumIconCount {
+	unsigned long long origValue = %orig;
+	if ( enableTweak ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
+			return 5;
+		}
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+			return numberOfRecents;
+		}
 	}
+	return origValue;
 }
-- (NSUInteger)numberOfLandscapeRows {
-	[self findLocation];
-	if ( enableTweak && ( ( homeScreenRotationStyle == 1 || homeScreenRotationStyle == 2 ) && dockStyle == 2 ) && [self.location isEqualToString:@"Root"] ) {
-		return ( 3 );
-	} else if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == 2 && allowMoreIcons ) {
-		return ( 8 );
-	} else if ( enableTweak && [self.location isEqualToString:@"Dock"] && dockStyle == ( 0 | 1 ) && allowMoreIcons ) {
-		return ( 5 );
-	} else {
-		return ( %orig );
+- (unsigned long long)iconColumnsForCurrentOrientation {
+	unsigned long long origValue = %orig;
+	if ( enableTweak ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
+			return 5;
+		}
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+			return numberOfRecents;
+		}
 	}
+	return origValue;
 }
-- (NSUInteger)numberOfLandscapeColumns {
-	[self findLocation];
-	if ( enableTweak && ( ( homeScreenRotationStyle == 1 || homeScreenRotationStyle == 2 ) && dockStyle == 2 ) && [self.location isEqualToString:@"Root"] ) {
-		return ( 8 );
-	} else {
-		return ( %orig );
+- (unsigned long long)iconsInRowForSpacingCalculation {
+	unsigned long long origValue = %orig;
+	if ( enableTweak ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
+			return 5;
+		}
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+			return numberOfRecents;
+		}
 	}
-}
-- (UIEdgeInsets)portraitLayoutInsets {
-	UIEdgeInsets origValue = %orig;
-	[self findLocation];
-	if ( enableTweak && dockStyle == 2 && [self.location isEqualToString:@"Root"] && iconsLayoutFix == 2 ) {
-		UIEdgeInsets newValue = UIEdgeInsetsMake(
-			origValue.top,
-			origValue.left,
-			origValue.bottom + 140,
-			origValue.right
-		);
-		return newValue;
-	} else {
-		return origValue;
-	}
-}
-- (UIEdgeInsets)landscapeLayoutInsets {
-	UIEdgeInsets origValue = %orig;
-	[self findLocation];
-	if ( enableTweak && dockStyle == 2 && [self.location isEqualToString:@"Root"] && iconsLayoutFix == 2 ) {
-		UIEdgeInsets newValue = UIEdgeInsetsMake(
-			origValue.top - 10,
-			origValue.left,
-			origValue.bottom + 135,
-			origValue.right
-		);
-		return newValue;
-	} else {
-		return origValue;
-	}
+	return origValue;
 }
 %end
 
 %hook SBFloatingDockSuggestionsViewController
+- (struct CGPoint)originForIconAtCoordinate:(struct SBIconCoordinate*)arg1 numberOfIcons:(unsigned long long)arg2 {
+	struct CGPoint origValue = %orig;
+	if ( enableTweak && dockStyle == 2 ) {
+		arg2 = numberOfRecents;
+	}
+	return origValue;
+}
 - (id)initWithNumberOfRecents:(unsigned long long)arg1 iconController:(id)arg2 applicationController:(id)arg3 layoutStateTransitionCoordinator:(id)arg4 suggestionsModel:(id)arg5 iconViewProvider:(id)arg6 {
 	id origValue = %orig;
-	if ( enableTweak ) {
-		arg1 = numberOfRecents;
-		return %orig;
-	} else {
-		return origValue;
+	if ( enableTweak && dockStyle == 2 ) {
+		return %orig(numberOfRecents, arg2, arg3, arg4, arg5, arg6);
 	}
+	return origValue;
 }
-%end
-
-%hook SBIconListPageControl
-- (id)initWithFrame:(CGRect)arg1 {
-	id origValue = %orig;
-	if ( enableTweak && iconsLayoutFix == 1 && dockStyle == 2 ) {
-		return nil;
-	} else {
-		return origValue;
+- (bool)allowsAddingIconCount:(unsigned long long)arg1 {
+	bool origValue = %orig;
+	if ( enableTweak && dockStyle == 2 ) {
+		arg1 = numberOfRecents;
+		return YES;
 	}
+	return origValue;
 }
 %end
 
@@ -317,30 +300,18 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && numberOfRecents == 0) {
 		return NO;
-	} else {
-		return origValue;
 	}
-}
-%end
-
-%hook SBFloatingDockView
-+ (void)getMetrics:(CGRect*)arg1 forBounds:(CGRect)arg2 numberOfUserIcons:(unsigned long long)arg3 numberOfRecentIcons:(unsigned long long)arg4 paddingEdgeInsets:(UIEdgeInsets)arg5 referenceIconSize:(CGSize)arg6 maximumIconSize:(CGSize)arg7 referenceInterIconSpacing:(double)arg8 maximumInterIconSpacing:(double)arg9 platterVerticalMargin:(double)arg10 {
-	if ( enableTweak && dockStyle == 2 && iconsLayoutFix == 1 ) {
-		%orig(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 * iconScale, arg9 * iconScale, arg10);
-	} else {
-		%orig;
-	}
+	return origValue;
 }
 %end
 
 %hook SBIconListView
 -(unsigned long long)iconRowsForCurrentOrientation {
 	long long origValue = %orig;
-	if ( enableTweak && dockStyle == 2 && [self.iconLocation containsString:@"SBIconLocationRoot"] && iconsLayoutFix == 1 ) {
+	if ( enableTweak && dockStyle == 2 && [self.iconLocation containsString:@"SBIconLocationRoot"] && iPadIconsLayoutFixInPortrait ) {
 		return origValue + 1;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
@@ -349,9 +320,8 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 404 ) {
 		return NO;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
@@ -360,9 +330,8 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 404 ) {
 		return NO;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
@@ -371,9 +340,8 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 404 ) {
 		return NO;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
@@ -383,14 +351,20 @@ void TweakSettingsChanged() {
 	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
 	if ( enableTweak && platform.homeButtonType == 2 ) {
 		return isFloatingDockGesturePossible;
-	} else {
-		return origValue;
 	}
+	return origValue;
 }
 %end
 
 %ctor {
 	TweakSettingsChanged();
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)TweakSettingsChanged, CFSTR("com.tomaszpoliszuk.dockcontroller.settingschanged"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+	CFNotificationCenterAddObserver(
+		CFNotificationCenterGetDarwinNotifyCenter(),
+		NULL,
+		(CFNotificationCallback)TweakSettingsChanged,
+		CFSTR("com.tomaszpoliszuk.dockcontroller.settingschanged"),
+		NULL,
+		CFNotificationSuspensionBehaviorDeliverImmediately
+	);
 	%init;
 }

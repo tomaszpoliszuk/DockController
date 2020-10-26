@@ -1,0 +1,10 @@
+{
+	ENABLE_TWEAK = "Enable Tweak";
+	RESET_SETTINGS = "Reset Settings";
+	RELATED_LINKS = "Related Links";
+	SOURCE_CODE = "Source Code";
+	KNOWN_ISSUES = "Known Issues";
+	TOMASZ_POLISZUK_AT_BIGBOSS = "Tomasz Poliszuk @ BigBoss";
+	TOMASZ_POLISZUK_AT_GITHUB = "Tomasz Poliszuk @ Github";
+	TOMASZ_POLISZUK_AT_TWITTER = "Tomasz Poliszuk @ Twitter";
+}
