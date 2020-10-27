@@ -1,7 +1,7 @@
 Package: com.tomaszpoliszuk.dockcontroller
 Depends: firmware (>= 13.0), mobilesubstrate, preferenceloader, cy+model.iphone | cy+model.ipod
 Name: Dock Controller
-Version: 1.4
+Version: 1.4.1
 Architecture: iphoneos-arm
 Description: Control Your Dock
 Homepage: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=dockcontrollerDp

@@ -217,7 +217,7 @@ void TweakSettingsChanged() {
 				}
 			}
 		}
-		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 && numberOfRecents > 0) {
 			SBIconListFlowLayout *iconListFlowLayout = [self layout];
 			if ( [iconListFlowLayout isKindOfClass:%c(SBIconListFlowLayout)] ) {
 				SBIconListGridLayoutConfiguration *iconListGridLayoutConfiguration = iconListFlowLayout.layoutConfiguration;
@@ -238,7 +238,7 @@ void TweakSettingsChanged() {
 		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
 			return 5;
 		}
-		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 && numberOfRecents > 0 ) {
 			return numberOfRecents;
 		}
 	}
@@ -250,7 +250,7 @@ void TweakSettingsChanged() {
 		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
 			return 5;
 		}
-		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 && numberOfRecents > 0 ) {
 			return numberOfRecents;
 		}
 	}
@@ -262,7 +262,7 @@ void TweakSettingsChanged() {
 		if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && dockStyle != 2 && allowMoreIcons ) {
 			return 5;
 		}
-		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 ) {
+		if ( [ self.iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions" ] && dockStyle == 2 && numberOfRecents > 0 ) {
 			return numberOfRecents;
 		}
 	}
@@ -273,21 +273,24 @@ void TweakSettingsChanged() {
 %hook SBFloatingDockSuggestionsViewController
 - (struct CGPoint)originForIconAtCoordinate:(struct SBIconCoordinate*)arg1 numberOfIcons:(unsigned long long)arg2 {
 	struct CGPoint origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 && numberOfRecents > 0 ) {
 		arg2 = numberOfRecents;
 	}
 	return origValue;
 }
 - (id)initWithNumberOfRecents:(unsigned long long)arg1 iconController:(id)arg2 applicationController:(id)arg3 layoutStateTransitionCoordinator:(id)arg4 suggestionsModel:(id)arg5 iconViewProvider:(id)arg6 {
 	id origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 && numberOfRecents > 0 ) {
 		return %orig(numberOfRecents, arg2, arg3, arg4, arg5, arg6);
+	}
+	if ( enableTweak && dockStyle == 2 && numberOfRecents == 0 ) {
+		return nil;
 	}
 	return origValue;
 }
 - (bool)allowsAddingIconCount:(unsigned long long)arg1 {
 	bool origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 && numberOfRecents > 0 ) {
 		arg1 = numberOfRecents;
 		return YES;
 	}
@@ -298,7 +301,7 @@ void TweakSettingsChanged() {
 %hook SBFloatingDockSuggestionsModel
 - (bool)recentsEnabled {
 	bool origValue = %orig;
-	if ( enableTweak && numberOfRecents == 0) {
+	if ( enableTweak && dockStyle == 2 && numberOfRecents == 0 ) {
 		return NO;
 	}
 	return origValue;
