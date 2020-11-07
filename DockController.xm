@@ -161,21 +161,24 @@ void TweakSettingsChanged() {
 }
 - (double)maximumInterIconSpacing {
 	double origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+	if ( enableTweak && platform.homeButtonType != 2 && dockStyle == 2 ) {
 		return 13;
 	}
 	return origValue;
 }
 - (double)platterVerticalMargin {
 	double origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+	if ( enableTweak && platform.homeButtonType != 2 && dockStyle == 2 ) {
 		return 5;
 	}
 	return origValue;
 }
 - (double)contentHeight {
 	double origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+	if ( enableTweak && platform.homeButtonType != 2 && dockStyle == 2 ) {
 		return origValue - 10;
 	}
 	return origValue;
