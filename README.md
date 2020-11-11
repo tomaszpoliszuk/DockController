@@ -3,7 +3,6 @@ Control Your Dock
 
 ## Compatibility
 * iOS 13 and above
-* iPhone or iPod Touch device
 
 ## What you can do with this tweak:
 * Choose Dock Type (Default, Disabled, Square, Rounded, iPad)
