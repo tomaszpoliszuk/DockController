@@ -31,20 +31,20 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 
 NSMutableDictionary *tweakSettings;
 
-static BOOL haveFaceID;
+static bool haveFaceID;
 
-static BOOL enableTweak;
+static bool enableTweak;
 
 static long long dockStyle;
-static BOOL showDockBackground;
-static BOOL allowMoreIcons;
+static bool showDockBackground;
+static bool allowMoreIcons;
 
-static BOOL showDockDivider;
+static bool showDockDivider;
 static long long numberOfRecents;
 static bool iPadIconsLayoutFixInPortrait;
 static bool iPadIconsLayoutFixInLandscape;
 
-static BOOL isFloatingDockGesturePossible;
+static bool gestureToShowDockInApps;
 
 void TweakSettingsChanged() {
 	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
@@ -64,7 +64,7 @@ void TweakSettingsChanged() {
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
 	iPadIconsLayoutFixInPortrait = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInPortrait"] ?: @(YES)) boolValue];
 	iPadIconsLayoutFixInLandscape = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInLandscape"] ?: @(NO)) boolValue];
-	isFloatingDockGesturePossible = [([tweakSettings objectForKey:@"isFloatingDockGesturePossible"] ?: @(YES)) boolValue];
+	gestureToShowDockInApps = [([tweakSettings objectForKey:@"gestureToShowDockInApps"] ?: @(YES)) boolValue];
 }
 
 %hook SBFloatingDockController
@@ -161,24 +161,21 @@ void TweakSettingsChanged() {
 }
 - (double)maximumInterIconSpacing {
 	double origValue = %orig;
-	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( enableTweak && platform.homeButtonType != 2 && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 ) {
 		return 13;
 	}
 	return origValue;
 }
 - (double)platterVerticalMargin {
 	double origValue = %orig;
-	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( enableTweak && platform.homeButtonType != 2 && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 ) {
 		return 5;
 	}
 	return origValue;
 }
 - (double)contentHeight {
 	double origValue = %orig;
-	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( enableTweak && platform.homeButtonType != 2 && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 ) {
 		return origValue - 10;
 	}
 	return origValue;
@@ -186,7 +183,7 @@ void TweakSettingsChanged() {
 %end
 
 %hook SBIconListView
--(void)layoutSubviews {
+- (void)didMoveToWindow {
 	if ( enableTweak ) {
 		if ( [ self.iconLocation isEqual:@"SBIconLocationRoot" ] && dockStyle == 2 && iPadIconsLayoutFixInLandscape ) {
 			SBIconListFlowLayout *iconListFlowLayout = [self layout];
@@ -351,12 +348,23 @@ void TweakSettingsChanged() {
 }
 %end
 
+%hook SBHomeGestureSettings
+- (bool)isHomeGestureEnabled {
+	bool origValue = %orig;
+	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+	if ( enableTweak && platform.homeButtonType == 1 && dockStyle == 2 ) {
+		return gestureToShowDockInApps;
+	}
+	return origValue;
+}
+%end
+
 %hook SBFluidSwitcherViewController
 - (bool)isFloatingDockGesturePossible {
 	bool origValue = %orig;
 	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( enableTweak && platform.homeButtonType == 2 ) {
-		return isFloatingDockGesturePossible;
+	if ( enableTweak && platform.homeButtonType == 2 && dockStyle == 2 ) {
+		return gestureToShowDockInApps;
 	}
 	return origValue;
 }
