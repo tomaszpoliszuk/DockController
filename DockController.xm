@@ -162,7 +162,7 @@ void TweakSettingsChanged() {
 	}
 	%orig;
 }
-- (void)didMoveToWindow {
+- (void)_updateCornerRadii {
 	%orig();
 	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
 		self.backgroundView.layer.cornerRadius = 30;
