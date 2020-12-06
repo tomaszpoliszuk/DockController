@@ -100,13 +100,7 @@ I'm working on fixing this issue.";
 				},
 				{
 					cell = PSGroupCell;
-					footerText = "On devices with Control Center on bottom:
-- to invoke Control Center by swipe upright from bottom
-- to invoke Dock swipe at angle
-
-You can use this gesture also to:
-- invoke App Switcher (continue swiping upright),
-- swich to other app (sipe left or right)";
+					footerText = "This option works only on devices with enabled modern multitasking gestures";
 				},
 				{
 					cell = PSSwitchCell;

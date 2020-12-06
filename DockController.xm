@@ -366,16 +366,16 @@ void TweakSettingsChanged() {
 }
 %end
 
-%hook SBHomeGestureSettings
-- (bool)isHomeGestureEnabled {
-	bool origValue = %orig;
-	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( enableTweak && platform.homeButtonType == 1 && dockStyle == 2 ) {
-		return gestureToShowDockInApps;
-	}
-	return origValue;
-}
-%end
+//	%hook SBHomeGestureSettings
+//	- (bool)isHomeGestureEnabled {
+//		bool origValue = %orig;
+//		BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+//		if ( enableTweak && platform.homeButtonType == 1 && dockStyle == 2 ) {
+//			return gestureToShowDockInApps;
+//		}
+//		return origValue;
+//	}
+//	%end
 
 %hook SBFluidSwitcherViewController
 - (bool)isFloatingDockGesturePossible {
@@ -383,6 +383,11 @@ void TweakSettingsChanged() {
 	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
 	if ( enableTweak && platform.homeButtonType == 2 && dockStyle == 2 ) {
 		return gestureToShowDockInApps;
+	}
+	return origValue;
+}
+%end
+
 	}
 	return origValue;
 }
