@@ -388,6 +388,31 @@ void TweakSettingsChanged() {
 }
 %end
 
+%hook SBHRootFolderVisualConfiguration
+- (double)dockBackgroundViewCornerRadius {
+	double origValue = %orig;
+	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		return 30;
+	}
+	return origValue;
+}
+- (UIEdgeInsets)dockBackgroundViewInsets {
+	UIEdgeInsets origValue = %orig;
+	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		origValue.top = origValue.top - 7;
+		origValue.left = origValue.left + 7;
+		origValue.bottom = origValue.bottom + 7;
+		origValue.right = origValue.right + 7;
+	}
+	return origValue;
+}
+- (UIEdgeInsets)dockListViewInsets {
+	UIEdgeInsets origValue = %orig;
+	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+		origValue.top = origValue.top - 7;
+		origValue.left = origValue.left + 7;
+		origValue.bottom = origValue.bottom + 7;
+		origValue.right = origValue.right + 7;
 	}
 	return origValue;
 }
