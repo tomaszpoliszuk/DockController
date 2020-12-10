@@ -40,9 +40,26 @@
 - (void)setNumberOfPortraitRows:(unsigned long long)arg1;
 @end
 
+@interface SBFloatingDockController : NSObject
+@property (nonatomic, readonly) double floatingDockHeight;
+@property (nonatomic, readonly) double preferredVerticalMargin;
+@end
+
+@interface SBIconController : UIViewController
++ (id)sharedInstance;
+@property (nonatomic, readonly) SBFloatingDockController *floatingDockController;
+@end
+
 @interface BSPlatform : NSObject
 + (id)sharedInstance;
 - (long long)homeButtonType;
+@end
+
+@interface UISystemShellApplication : UIApplication
+@end
+@interface SpringBoard : UISystemShellApplication
++ (id)sharedApplication;
+- (bool)homeScreenSupportsRotation;
 @end
 
 NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
@@ -145,14 +162,14 @@ void TweakSettingsChanged() {
 }
 - (double)maximumInterIconSpacing {
 	double origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 && UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) && [[%c(SpringBoard) sharedApplication] homeScreenSupportsRotation] && iPadIconsLayoutFixInLandscape ) {
 		return 13;
 	}
 	return origValue;
 }
 - (double)platterVerticalMargin {
 	double origValue = %orig;
-	if ( enableTweak && dockStyle == 2 ) {
+	if ( enableTweak && dockStyle == 2 && UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) && [[%c(SpringBoard) sharedApplication] homeScreenSupportsRotation] && iPadIconsLayoutFixInLandscape ) {
 		return 5;
 	}
 	return origValue;
@@ -185,7 +202,7 @@ void TweakSettingsChanged() {
 				SBIconListGridLayoutConfiguration *iconListGridLayoutConfiguration = iconListFlowLayout.layoutConfiguration;
 				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
 					[iconListGridLayoutConfiguration setNumberOfPortraitColumns:5];
-					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:5];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:5];
 				}
 			}
 		}
@@ -196,8 +213,8 @@ void TweakSettingsChanged() {
 				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
 					[iconListGridLayoutConfiguration setNumberOfPortraitRows:1];
 					[iconListGridLayoutConfiguration setNumberOfPortraitColumns:8];
-					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:8];
-					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:1];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:1];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:8];
 				}
 			}
 		}
@@ -208,8 +225,8 @@ void TweakSettingsChanged() {
 				if ( [iconListGridLayoutConfiguration isKindOfClass:%c(SBIconListGridLayoutConfiguration)] ) {
 					[iconListGridLayoutConfiguration setNumberOfPortraitRows:1];
 					[iconListGridLayoutConfiguration setNumberOfPortraitColumns:numberOfRecents];
-					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:numberOfRecents];
-					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:1];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeRows:1];
+					[iconListGridLayoutConfiguration setNumberOfLandscapeColumns:numberOfRecents];
 				}
 			}
 		}
@@ -287,6 +304,27 @@ void TweakSettingsChanged() {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 2 && numberOfRecents == 0 ) {
 		return NO;
+	}
+	return origValue;
+}
+%end
+
+%hook SBIconListView
+- (UIEdgeInsets)layoutInsetsForOrientation:(long long)arg1 {
+	UIEdgeInsets origValue = %orig;
+	if ( enableTweak && dockStyle == 2 && [self.iconLocation containsString:@"SBIconLocationRoot"] && ( iPadIconsLayoutFixInPortrait || iPadIconsLayoutFixInLandscape ) ) {
+//		double pageControlHeight = [[[%c(SBIconController) sharedInstance] _rootFolderController] pageControl].defaultHeight;
+//		returns 37 on iOS13 but it's unaccessible on iOS14 so - at least for now - I'm using 37 without reading this value
+		double pageControlHeight = 37;
+		double floatingDockHeight = [[%c(SBIconController) sharedInstance] floatingDockController].floatingDockHeight;
+		double preferredVerticalMargin = [[%c(SBIconController) sharedInstance] floatingDockController].preferredVerticalMargin;
+		double dockHeightTotal = pageControlHeight + floatingDockHeight + preferredVerticalMargin;
+		if ( UIDeviceOrientationIsPortrait(arg1) && iPadIconsLayoutFixInPortrait ) {
+			origValue.bottom = dockHeightTotal;
+		}
+		if ( UIDeviceOrientationIsLandscape(arg1) && iPadIconsLayoutFixInLandscape ) {
+			origValue.bottom = dockHeightTotal;
+		}
 	}
 	return origValue;
 }
