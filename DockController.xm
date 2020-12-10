@@ -106,46 +106,12 @@ void TweakSettingsChanged() {
 %end
 
 %hook SBDockView
-+ (double)defaultHeight {
-	double origValue = %orig;
-	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 96;
-	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 92;
-	}
-	return origValue;
-}
-- (double)dockHeight {
-	double origValue = %orig;
-	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 96;
-	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 92;
-	}
-	return origValue;
-}
 - (bool)isDockInset {
 	bool origValue = %orig;
 	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
 		return NO;
 	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
 		return YES;
-	}
-	return origValue;
-}
-+ (double)defaultHeightPadding {
-	double origValue = %orig;
-	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 4;
-	}
-	return origValue;
-}
-- (double)dockHeightPadding {
-	double origValue = %orig;
-	if ( enableTweak && dockStyle == 0 && haveFaceID ) {
-		return 4;
-	} else if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 0;
 	}
 	return origValue;
 }
@@ -326,16 +292,6 @@ void TweakSettingsChanged() {
 }
 %end
 
-%hook SBIconListView
--(unsigned long long)iconRowsForCurrentOrientation {
-	long long origValue = %orig;
-	if ( enableTweak && dockStyle == 2 && [self.iconLocation containsString:@"SBIconLocationRoot"] && iPadIconsLayoutFixInPortrait ) {
-		return origValue + 1;
-	}
-	return origValue;
-}
-%end
-
 %hook SBHIconModel
 - (bool)supportsDock {
 	bool origValue = %orig;
@@ -389,13 +345,6 @@ void TweakSettingsChanged() {
 %end
 
 %hook SBHRootFolderVisualConfiguration
-- (double)dockBackgroundViewCornerRadius {
-	double origValue = %orig;
-	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
-		return 30;
-	}
-	return origValue;
-}
 - (UIEdgeInsets)dockBackgroundViewInsets {
 	UIEdgeInsets origValue = %orig;
 	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
