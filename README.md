@@ -4,7 +4,7 @@ Control Your Dock
 ## Compatibility
 * iOS 13 and above
 
-## What you can do with this tweak:
+## Features:
 * Choose Dock Type (Default, Disabled, Square, Rounded, iPad)
 * Dock Background (enabled, disabled)
 * Allow more icons in Dock (8 for iPad Dock 5 for rest of them) - currently disabled on iOS 14
