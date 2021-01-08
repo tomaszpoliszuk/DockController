@@ -46,8 +46,8 @@
 @end
 
 @interface SBIconController : UIViewController
-+ (id)sharedInstance;
 @property (nonatomic, readonly) SBFloatingDockController *floatingDockController;
++ (id)sharedInstance;
 @end
 
 @interface BSPlatform : NSObject
@@ -60,6 +60,11 @@
 @interface SpringBoard : UISystemShellApplication
 + (id)sharedApplication;
 - (bool)homeScreenSupportsRotation;
+@end
+
+@interface SBMainSwitcherViewController : UIViewController
++ (id)sharedInstance;
+- (bool)isMainSwitcherVisible;
 @end
 
 NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
@@ -75,6 +80,7 @@ static bool showDockBackground;
 static bool allowMoreIcons;
 
 static bool showDockDivider;
+static bool showInAppSwitcher;
 static long long numberOfRecents;
 static bool iPadIconsLayoutFixInPortrait;
 static bool iPadIconsLayoutFixInLandscape;
@@ -96,6 +102,7 @@ void TweakSettingsChanged() {
 	}
 
 	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
+	showInAppSwitcher = [([tweakSettings objectForKey:@"showInAppSwitcher"] ?: @(YES)) boolValue];
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
 	iPadIconsLayoutFixInPortrait = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInPortrait"] ?: @(YES)) boolValue];
 	iPadIconsLayoutFixInLandscape = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInLandscape"] ?: @(NO)) boolValue];
@@ -109,6 +116,15 @@ void TweakSettingsChanged() {
 		return YES;
 	}
 	return origValue;
+}
+%end
+
+%hook SBFloatingDockViewController
+- (void)setDockOffscreenProgress:(double)arg1 {
+	if ( enableTweak && !showInAppSwitcher && [[%c(SBMainSwitcherViewController) sharedInstance] isMainSwitcherVisible] ) {
+		arg1 = 1;
+	}
+	%orig;
 }
 %end
 
@@ -146,8 +162,8 @@ void TweakSettingsChanged() {
 	%orig;
 }
 - (void)_updateCornerRadii {
-	%orig();
 	if ( enableTweak && dockStyle == 1 && !haveFaceID ) {
+	%orig;
 		self.backgroundView.layer.cornerRadius = 30;
 	}
 }
@@ -360,16 +376,16 @@ void TweakSettingsChanged() {
 }
 %end
 
-//	%hook SBHomeGestureSettings
-//	- (bool)isHomeGestureEnabled {
-//		bool origValue = %orig;
-//		BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-//		if ( enableTweak && platform.homeButtonType == 1 && dockStyle == 2 ) {
-//			return gestureToShowDockInApps;
-//		}
-//		return origValue;
-//	}
-//	%end
+%hook SBHomeGestureSettings
+- (bool)isHomeGestureEnabled {
+	bool origValue = %orig;
+	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
+	if ( enableTweak && platform.homeButtonType == 1 && dockStyle == 2 ) {
+		return gestureToShowDockInApps;
+	}
+	return origValue;
+}
+%end
 
 %hook SBFluidSwitcherViewController
 - (bool)isFloatingDockGesturePossible {

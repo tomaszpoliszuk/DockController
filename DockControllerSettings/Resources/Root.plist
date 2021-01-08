@@ -63,15 +63,6 @@
 			title = "iPad Dock Settings";
 			items = (
 				{
-					cell = PSSwitchCell;
-					cellClass = DockControllerSwitchTableCell;
-					key = "showDockDivider";
-					label = "Dock Divider";
-					default = 1;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-				},
-				{
 					cell = PSGroupCell;
 					label = "Maximum number of Recent applications";
 					footerText = "Please note that for now selecting 1 or 2 is partially broken - you will see correct number of recent apps but sometimes last used app will be that hidden icon.
@@ -100,7 +91,24 @@ I'm working on fixing this issue.";
 				},
 				{
 					cell = PSGroupCell;
-					footerText = "This option works only on devices with enabled modern multitasking gestures";
+				},
+				{
+					cell = PSSwitchCell;
+					cellClass = DockControllerSwitchTableCell;
+					key = "showInAppSwitcher";
+					label = "Show in App Switcher";
+					default = 1;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+				},
+				{
+					cell = PSSwitchCell;
+					cellClass = DockControllerSwitchTableCell;
+					key = "showDockDivider";
+					label = "Dock Divider";
+					default = 1;
+					defaults = com.tomaszpoliszuk.dockcontroller;
+					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
 				},
 				{
 					cell = PSSwitchCell;
