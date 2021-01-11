@@ -43,6 +43,9 @@
 @interface SBFloatingDockController : NSObject
 @property (nonatomic, readonly) double floatingDockHeight;
 @property (nonatomic, readonly) double preferredVerticalMargin;
+- (bool)isFloatingDockPresented;
+- (void)_dismissFloatingDockIfPresentedAnimated:(bool)arg1 completionHandler:(id /* block */)arg2;
+//	- (void)_presentFloatingDockIfDismissedAnimated:(bool)arg1 completionHandler:(id /* block */)arg2;
 @end
 
 @interface SBIconController : UIViewController
@@ -119,12 +122,61 @@ void TweakSettingsChanged() {
 }
 %end
 
-%hook SBFloatingDockViewController
-- (void)setDockOffscreenProgress:(double)arg1 {
-	if ( enableTweak && !showInAppSwitcher && [[%c(SBMainSwitcherViewController) sharedInstance] isMainSwitcherVisible] ) {
-		arg1 = 1;
+//	%hook SBFloatingDockViewController
+//	- (void)setDockOffscreenProgress:(double)arg1 {
+//	//	works but without animation, animating is possible but i had bugs with it so far :/
+//		if ( enableTweak && !showInAppSwitcher && [[%c(SBMainSwitcherViewController) sharedInstance] isMainSwitcherVisible] ) {
+//			arg1 = 1;
+//		}
+//		%orig;
+//	}
+//	%end
+
+//		%hook SBMainSwitcherViewControlle
+//		- (bool)isMainSwitcherVisible {
+//	//	works but triggers after switcher is visible :(
+//			bool origValue = %orig;
+//			if ( enableTweak && !showInAppSwitcher && origValue && [[[%c(SBIconController) sharedInstance] floatingDockController] isFloatingDockPresented] ) {
+//				[[[%c(SBIconController) sharedInstance] floatingDockController] _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil];
+//			}
+//			return origValue;
+//		}
+//		%end
+
+%hook SBDeckSwitcherModifier
+- (bool)shouldConfigureInAppDockHiddenAssertion {
+//	works only for deck switcher
+	bool origValue = %orig;
+	if ( enableTweak && !showInAppSwitcher ) {
+		return YES;
 	}
-	%orig;
+	return origValue;
+}
+%end
+
+%hook _SBGridFloorSwitcherModifier
+- (bool)shouldConfigureInAppDockHiddenAssertion {
+	bool origValue = %orig;
+//	should work for grid switcher based on code for deck switcher but it doesn't :(
+//	if ( enableTweak && !showInAppSwitcher ) {
+//		return YES;
+//	}
+//	so instead dismiss floating dock using this code (but in this case when toggling from app using home button dock shows for a moment and then hides) :(
+	if ( enableTweak && !showInAppSwitcher && [[%c(SBMainSwitcherViewController) sharedInstance] isMainSwitcherVisible] ) {
+		[[[%c(SBIconController) sharedInstance] floatingDockController] _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil];
+	}
+	return origValue;
+}
+%end
+
+%hook SBHomeHardwareButton
+- (bool)_processDoubleDownAndDoubleUpSimultaneously {
+	bool origValue = %orig;
+//	so we prevent this using this code - it works but somehow feels wrong ¯\_(ツ)_/¯ and still dock shows for a moment when invoking app switcher from activator ;(
+	if ( enableTweak && !showInAppSwitcher && [[%c(SBMainSwitcherViewController) sharedInstance] isMainSwitcherVisible] ) {
+		[[[%c(SBIconController) sharedInstance] floatingDockController] _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil];
+	}
+	return origValue;
 }
 %end
 
