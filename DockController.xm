@@ -16,57 +16,7 @@
  */
 
 
-#define isiOS14OrAbove (kCFCoreFoundationVersionNumber >= 1740.00)
-
-@interface SBDockView : UIView
-@property (nonatomic, retain) UIView *backgroundView;
-@end
-
-@interface SBIconListView : UIView
-- (id)layout;
-- (id)iconLocation;
-@end
-
-@interface SBIconListGridLayout : NSObject
-@end
-@interface SBIconListFlowLayout : SBIconListGridLayout
-- (id)layoutConfiguration;
-@end
-
-@interface SBIconListGridLayoutConfiguration : NSObject
-- (void)setNumberOfLandscapeColumns:(unsigned long long)arg1;
-- (void)setNumberOfLandscapeRows:(unsigned long long)arg1;
-- (void)setNumberOfPortraitColumns:(unsigned long long)arg1;
-- (void)setNumberOfPortraitRows:(unsigned long long)arg1;
-@end
-
-@interface SBFloatingDockController : NSObject
-@property (nonatomic, readonly) double floatingDockHeight;
-@property (nonatomic, readonly) double preferredVerticalMargin;
-- (void)_dismissFloatingDockIfPresentedAnimated:(bool)arg1 completionHandler:(id /* block */)arg2;
-@end
-
-@interface SBIconController : UIViewController
-@property (nonatomic, readonly) SBFloatingDockController *floatingDockController;
-+ (id)sharedInstance;
-@end
-
-@interface BSPlatform : NSObject
-+ (id)sharedInstance;
-- (long long)homeButtonType;
-@end
-
-@interface UISystemShellApplication : UIApplication
-@end
-@interface SpringBoard : UISystemShellApplication
-+ (id)sharedApplication;
-- (bool)homeScreenSupportsRotation;
-@end
-
-@interface SBMainSwitcherViewController : UIViewController
-+ (id)sharedInstance;
-- (bool)isMainSwitcherVisible;
-@end
+#import "DockController.h"
 
 NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 
@@ -87,28 +37,6 @@ static bool iPadIconsLayoutFixInPortrait;
 static bool iPadIconsLayoutFixInLandscape;
 
 static bool gestureToShowDockInApps;
-
-void TweakSettingsChanged() {
-	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
-
-	NSUserDefaults *tweakSettings = [[NSUserDefaults alloc] initWithSuiteName:domainString];
-
-	enableTweak = [([tweakSettings objectForKey:@"enableTweak"] ?: @(YES)) boolValue];
-
-	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(999)) integerValue];
-	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
-	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(YES)) boolValue];
-	if (isiOS14OrAbove) {
-		allowMoreIcons = NO;
-	}
-
-	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
-	showInAppSwitcher = [([tweakSettings objectForKey:@"showInAppSwitcher"] ?: @(YES)) boolValue];
-	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
-	iPadIconsLayoutFixInPortrait = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInPortrait"] ?: @(YES)) boolValue];
-	iPadIconsLayoutFixInLandscape = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInLandscape"] ?: @(NO)) boolValue];
-	gestureToShowDockInApps = [([tweakSettings objectForKey:@"gestureToShowDockInApps"] ?: @(YES)) boolValue];
-}
 
 %hook SBFloatingDockController
 + (bool)isFloatingDockSupported {
@@ -452,12 +380,34 @@ void TweakSettingsChanged() {
 }
 %end
 
+void SettingsChanged() {
+	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
+
+	NSUserDefaults *tweakSettings = [[NSUserDefaults alloc] initWithSuiteName:domainString];
+
+	enableTweak = [([tweakSettings objectForKey:@"enableTweak"] ?: @(YES)) boolValue];
+
+	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(999)) integerValue];
+	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
+	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(YES)) boolValue];
+	if (isiOS14OrAbove) {
+		allowMoreIcons = NO;
+	}
+
+	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
+	showInAppSwitcher = [([tweakSettings objectForKey:@"showInAppSwitcher"] ?: @(YES)) boolValue];
+	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
+	iPadIconsLayoutFixInPortrait = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInPortrait"] ?: @(YES)) boolValue];
+	iPadIconsLayoutFixInLandscape = [([tweakSettings objectForKey:@"iPadIconsLayoutFixInLandscape"] ?: @(NO)) boolValue];
+	gestureToShowDockInApps = [([tweakSettings objectForKey:@"gestureToShowDockInApps"] ?: @(YES)) boolValue];
+}
+
 %ctor {
-	TweakSettingsChanged();
+	SettingsChanged();
 	CFNotificationCenterAddObserver(
 		CFNotificationCenterGetDarwinNotifyCenter(),
 		NULL,
-		(CFNotificationCallback)TweakSettingsChanged,
+		(CFNotificationCallback)SettingsChanged,
 		CFSTR("com.tomaszpoliszuk.dockcontroller.settingschanged"),
 		NULL,
 		CFNotificationSuspensionBehaviorDeliverImmediately
