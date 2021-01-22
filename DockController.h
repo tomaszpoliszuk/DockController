@@ -16,54 +16,51 @@
  */
 
 
-#define isiOS14OrAbove (kCFCoreFoundationVersionNumber >= 1740.00)
-
-@interface SBDockView : UIView
-@property (nonatomic, retain) UIView *backgroundView;
-@end
-
-@interface SBIconListView : UIView
-- (id)layout;
-- (id)iconLocation;
-@end
-
-@interface SBIconListGridLayout : NSObject
-@end
-@interface SBIconListFlowLayout : SBIconListGridLayout
-- (id)layoutConfiguration;
-@end
-
-@interface SBIconListGridLayoutConfiguration : NSObject
-- (void)setNumberOfLandscapeColumns:(unsigned long long)arg1;
-- (void)setNumberOfLandscapeRows:(unsigned long long)arg1;
-- (void)setNumberOfPortraitColumns:(unsigned long long)arg1;
-- (void)setNumberOfPortraitRows:(unsigned long long)arg1;
-@end
-
-@interface SBFloatingDockController : NSObject
-@property (nonatomic, readonly) double floatingDockHeight;
-@property (nonatomic, readonly) double preferredVerticalMargin;
-- (void)_dismissFloatingDockIfPresentedAnimated:(bool)arg1 completionHandler:(id /* block */)arg2;
-@end
-
-@interface SBIconController : UIViewController
-@property (nonatomic, readonly) SBFloatingDockController *floatingDockController;
-+ (id)sharedInstance;
-@end
-
 @interface BSPlatform : NSObject
 + (id)sharedInstance;
 - (long long)homeButtonType;
 @end
 
-@interface UISystemShellApplication : UIApplication
-@end
-@interface SpringBoard : UISystemShellApplication
+@interface SpringBoard : UIApplication
 + (id)sharedApplication;
 - (bool)homeScreenSupportsRotation;
+- (UIInterfaceOrientation)activeInterfaceOrientation;
 @end
 
 @interface SBMainSwitcherViewController : UIViewController
 + (id)sharedInstance;
 - (bool)isMainSwitcherVisible;
+@end
+
+@interface SBDockView : UIView
+@end
+
+@interface SBIconListView : UIView
+- (id)iconLocation;
+@end
+
+@interface SBHIconManager : NSObject
+- (bool)isShowingSpotlightOrTodayView;
+@end
+
+@interface SBIconListGridLayoutConfiguration : NSObject
+@property (nonatomic) unsigned long long numberOfPortraitRows;
+@property (nonatomic) unsigned long long numberOfPortraitColumns;
+- (void)setNumberOfLandscapeRows:(unsigned long long)arg1;
+@end
+
+@interface SBFloatingDockController : NSObject
+@property (nonatomic, readonly) double floatingDockHeight;
+@property (nonatomic, readonly) double preferredVerticalMargin;
+@property (readonly, nonatomic) double maximumFloatingDockHeight;
+- (void)_dismissFloatingDockIfPresentedAnimated:(bool)arg1 completionHandler:(id /* block */)arg2;
+- (void)_presentFloatingDockIfDismissedAnimated:(bool)arg1 completionHandler:(id /* block */)arg2;
+@end
+
+@interface SBIconController : UIViewController
+@property (nonatomic, readonly) SBHIconManager *iconManager;
+@property (nonatomic, readonly) SBFloatingDockController *floatingDockController;
+- (bool)isTodayOverlayPresented;
+- (bool)isLibraryOverlayPresented;
+- (bool)isAnySearchVisibleOrTransitioning;
 @end

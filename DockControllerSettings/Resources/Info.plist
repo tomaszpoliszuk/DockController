@@ -7,5 +7,5 @@
 	CFBundleShortVersionString = "1.0.0";
 	CFBundleSignature = "????";
 	CFBundleVersion = "1.0";
-	NSPrincipalClass = "DockControllerMainSettings";
+	NSPrincipalClass = "DockControllerRootSettings";
 }

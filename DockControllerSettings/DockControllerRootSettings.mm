@@ -58,7 +58,7 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 -(BOOL)containsSpecifier:(id)arg1;
 @end
 
-@interface DockControllerMainSettings : PSListController {
+@interface DockControllerRootSettings : PSListController {
 	NSMutableArray *removeSpecifiers;
 }
 @property (nonatomic, retain) NSMutableDictionary *savedSpecifiers;
@@ -92,23 +92,10 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 }
 @end
 
-@implementation DockControllerMainSettings
+@implementation DockControllerRootSettings
 -(NSArray *)specifiers {
 	if (!_specifiers) {
 		_specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
-		if ( isiOS14OrAbove ) {
-			removeSpecifiers = [[NSMutableArray alloc]init];
-			for(PSSpecifier* specifier in _specifiers) {
-				NSString* key = [specifier propertyForKey:@"key"];
-				if(
-					[key isEqual:@"allowMoreIcons"]
-				) {
-					[removeSpecifiers addObject:specifier];
-				}
-
-			}
-			[_specifiers removeObjectsInArray:removeSpecifiers];
-		}
 	}
 	return _specifiers;
 }

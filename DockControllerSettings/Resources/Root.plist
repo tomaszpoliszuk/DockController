@@ -65,9 +65,6 @@
 				{
 					cell = PSGroupCell;
 					label = "Maximum number of Recent applications";
-					footerText = "Please note that for now selecting 1 or 2 is partially broken - you will see correct number of recent apps but sometimes last used app will be that hidden icon.
-
-I'm working on fixing this issue.";
 				},
 				{
 					cell = PSSegmentCell;
@@ -121,28 +118,52 @@ I'm working on fixing this issue.";
 				},
 				{
 					cell = PSGroupCell;
-					label = "Fix icons layout on Springboard";
-					footerText = "Turn on those options if you eperience incorrect icon layout on springboard and don't use any tweak that changes that layout.
-
-Landscape fix is incompatible with homescreen widgets on iOS 14";
+					label = "Springboard Icons Layout Helpers";
+					footerText = "Landscape orientation helpers are incompatible with homescreen widgets on iOS 14";
 				},
 				{
-					cell = PSSwitchCell;
-					cellClass = DockControllerSwitchTableCell;
-					key = iPadIconsLayoutFixInPortrait;
-					label = "for Portrait orientation";
-					default = 1;
+					cell = PSStaticTextCell;
+					label = "Portrait";
+				},
+				{
+					cell = PSSegmentCell;
+					key = "springboardIconsLayoutPortrait";
+					default = 2;
 					defaults = com.tomaszpoliszuk.dockcontroller;
 					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+					validValues = (
+						0,
+						1,
+						2,
+					);
+					validTitles = (
+						Disabled,
+						Static,
+						Dynamic,
+					);
+					height = 55;
 				},
 				{
-					cell = PSSwitchCell;
-					cellClass = DockControllerSwitchTableCell;
-					key = iPadIconsLayoutFixInLandscape;
-					label = "for Landscape orientation";
+					cell = PSStaticTextCell;
+					label = "Landscape";
+				},
+				{
+					cell = PSSegmentCell;
+					key = "springboardIconsLayoutLandscape";
 					default = 0;
 					defaults = com.tomaszpoliszuk.dockcontroller;
 					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+					validValues = (
+						0,
+						1,
+						2,
+					);
+					validTitles = (
+						Disabled,
+						Static,
+						Dynamic,
+					);
+					height = 55;
 				},
 			);
 		},

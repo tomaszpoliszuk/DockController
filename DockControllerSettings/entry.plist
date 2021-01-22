@@ -4,7 +4,7 @@
 		isController = 1;
 		label = "Dock Controller";
 		bundle = DockControllerSettings;
-		detail = DockControllerMainSettings;
+		detail = DockControllerRootSettings;
 		icon = icons/DockController.png;
 	};
 }
