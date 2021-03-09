@@ -48,10 +48,10 @@
 		},
 		{
 			cell = PSSwitchCell;
-			cellClass = DockControllerSwitchTableCell;
+			cellClass = PSSubtitleSwitchTableCell;
 			key = "allowMoreIcons";
 			label = "Allow more icons in Dock";
-			sublabel = "8 for iPad Dock 5 for rest of them";
+			cellSubtitleText = "8 for iPad Dock 5 for rest of them";
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
@@ -59,113 +59,7 @@
 		{
 			cell = PSLinkCell;
 			label = "iPad Dock Settings";
-			detail = "PSListController";
-			title = "iPad Dock Settings";
-			items = (
-				{
-					cell = PSGroupCell;
-					label = "Maximum number of Recent applications";
-				},
-				{
-					cell = PSSegmentCell;
-					key = "numberOfRecents";
-					default = 3;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-					validValues = (
-						0,
-						1,
-						2,
-						3,
-					);
-					validTitles = (
-						0,
-						1,
-						2,
-						3,
-					);
-					height = 55;
-				},
-				{
-					cell = PSGroupCell;
-				},
-				{
-					cell = PSSwitchCell;
-					cellClass = DockControllerSwitchTableCell;
-					key = "showInAppSwitcher";
-					label = "Show in App Switcher";
-					default = 1;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-				},
-				{
-					cell = PSSwitchCell;
-					cellClass = DockControllerSwitchTableCell;
-					key = "showDockDivider";
-					label = "Dock Divider";
-					default = 1;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-				},
-				{
-					cell = PSSwitchCell;
-					cellClass = DockControllerSwitchTableCell;
-					key = "gestureToShowDockInApps";
-					label = "Gesture to show Dock in Apps";
-					default = 1;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-				},
-				{
-					cell = PSGroupCell;
-					label = "Springboard Icons Layout Helpers";
-					footerText = "Landscape orientation helpers are incompatible with homescreen widgets on iOS 14";
-				},
-				{
-					cell = PSStaticTextCell;
-					label = "Portrait";
-				},
-				{
-					cell = PSSegmentCell;
-					key = "springboardIconsLayoutPortrait";
-					default = 2;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-					validValues = (
-						0,
-						1,
-						2,
-					);
-					validTitles = (
-						Disabled,
-						Static,
-						Dynamic,
-					);
-					height = 55;
-				},
-				{
-					cell = PSStaticTextCell;
-					label = "Landscape";
-				},
-				{
-					cell = PSSegmentCell;
-					key = "springboardIconsLayoutLandscape";
-					default = 0;
-					defaults = com.tomaszpoliszuk.dockcontroller;
-					PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
-					validValues = (
-						0,
-						1,
-						2,
-					);
-					validTitles = (
-						Disabled,
-						Static,
-						Dynamic,
-					);
-					height = 55;
-				},
-			);
+			detail = "DockControlleriPadSettings";
 		},
 		{
 			cell = PSGroupCell;

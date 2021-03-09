@@ -1,0 +1,126 @@
+{
+	title = "iPad Dock Settings";
+	items = (
+		{
+			cell = PSGroupCell;
+			label = "Maximum number of Recent applications";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "numberOfRecents";
+			default = 3;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+				2,
+				3,
+			);
+			validTitles = (
+				0,
+				1,
+				2,
+				3,
+			);
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
+			key = "showInAppSwitcher";
+			label = "Show in App Switcher";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
+			key = "showDockDivider";
+			label = "Dock Divider";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
+			key = "gestureToShowDockInApps";
+			label = "Gesture to show Dock in Apps";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+		{
+			cell = PSGroupCell;
+			label = "Springboard Icons Portrait Helper";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "springboardIconsLayoutPortrait";
+			default = 2;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+				2,
+			);
+			validTitles = (
+				Disabled,
+				Static,
+				Dynamic,
+			);
+			height = 55;
+		},
+		{
+			cell = PSEditTextCell;
+			label = "Additional Bottom spacing";
+			key = springboardIconsBottomSpacingPortrait;
+			keyboard = numbers;
+			isNumeric = 1;
+			default = 37;
+			placeholder = 0;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+		{
+			cell = PSGroupCell;
+			label = "Springboard Icons Landscape Helper";
+			footerText = "Landscape orientation helpers are incompatible with homescreen widgets on iOS 14";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "springboardIconsLayoutLandscape";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+				2,
+			);
+			validTitles = (
+				Disabled,
+				Static,
+				Dynamic,
+			);
+			height = 55;
+		},
+		{
+			cell = PSEditTextCell;
+			label = "Additional Bottom spacing";
+			key = springboardIconsBottomSpacingLandscape;
+			keyboard = numbers;
+			isNumeric = 1;
+			default = 37;
+			placeholder = 0;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+	);
+}

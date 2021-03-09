@@ -41,55 +41,7 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 - (void)sendActions:(id)arg1 withResult:(id /* block */)arg2;
 @end
 
-@interface DockControllerTableCell : PSTableCell
-@end
-
-@interface PSControlTableCell : PSTableCell
-- (UIControl *)control;
-@end
-
-@interface PSSwitchTableCell : PSControlTableCell
-@end
-
-@interface DockControllerSwitchTableCell : PSSwitchTableCell
-@end
-
-@interface PSListController (DockController)
--(BOOL)containsSpecifier:(id)arg1;
-@end
-
-@interface DockControllerRootSettings : PSListController {
-	NSMutableArray *removeSpecifiers;
-}
-@property (nonatomic, retain) NSMutableDictionary *savedSpecifiers;
-@end
-
-@implementation DockControllerTableCell
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(id)identifier specifier:(id)specifier {
-	return [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier specifier:specifier];
-}
-- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
-	[super refreshCellContentsWithSpecifier:specifier];
-	NSString *sublabel = [specifier propertyForKey:@"sublabel"];
-	if (sublabel) {
-		self.detailTextLabel.text = [sublabel description];
-		self.detailTextLabel.textColor = [UIColor grayColor];
-	}
-}
-@end
-
-@implementation DockControllerSwitchTableCell
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(id)identifier specifier:(id)specifier {
-	return [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier specifier:specifier];
-}
-- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
-	[super refreshCellContentsWithSpecifier:specifier];
-	NSString *sublabel = [specifier propertyForKey:@"sublabel"];
-	if (sublabel) {
-		self.detailTextLabel.text = [sublabel description];
-		self.detailTextLabel.textColor = [UIColor grayColor];
-	}
-}
+@interface DockControllerRootSettings : PSListController
 @end
 
 @implementation DockControllerRootSettings
@@ -110,7 +62,7 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 -(void)respringDevice {
 	UIAlertController *confirmRespringAlert = [UIAlertController alertControllerWithTitle:@"Respring Device" message:@"Do you want to respring device?" preferredStyle:UIAlertControllerStyleAlert];
 	UIAlertAction *confirm = [UIAlertAction actionWithTitle:@"Confirm" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-		SBSRelaunchAction *respringAction = [NSClassFromString(@"SBSRelaunchAction") actionWithReason:@"RestartRenderServer" options:4 targetURL:[NSURL URLWithString:@"prefs:root=Dock%20Controller"]];
+		SBSRelaunchAction *respringAction = [NSClassFromString(@"SBSRelaunchAction") actionWithReason:@"RestartRenderServer" options:4 targetURL:[NSURL URLWithString:[@"prefs:root=Dock Controller" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]]];
 		FBSSystemService *frontBoardService = [NSClassFromString(@"FBSSystemService") sharedService];
 		NSSet *actions = [NSSet setWithObject:respringAction];
 		[frontBoardService sendActions:actions withResult:nil];
@@ -146,7 +98,8 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 }
 -(void)TomaszPoliszukAtBigBoss {
 	UIApplication *application = [UIApplication sharedApplication];
-	NSString *tweakName = @"Dock+Controller";
+	NSString *tweakName = @"Dock Controller";
+	tweakName = [tweakName stringByReplacingOccurrencesOfString:@" " withString:@"+"];
 	NSURL *twitterWebsite = [NSURL URLWithString:[@"http://apt.thebigboss.org/developer-packages.php?name=" stringByAppendingString:tweakName]];
 	[application openURL:twitterWebsite options:@{} completionHandler:nil];
 }
@@ -162,4 +115,17 @@ NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
 	NSURL *twitterWebsite = [NSURL URLWithString:[@"https://mobile.twitter.com/" stringByAppendingString:username]];
 	[application openURL:twitterWebsite options:@{} completionHandler:nil];
 }
+@end
+
+@interface DockControlleriPadSettings : PSListController
+@end
+
+@implementation DockControlleriPadSettings
+-(NSArray *)specifiers {
+	if (!_specifiers) {
+		_specifiers = [self loadSpecifiersFromPlistName:@"iPad" target:self];
+	}
+	return _specifiers;
+}
+
 @end

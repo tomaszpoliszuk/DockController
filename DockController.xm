@@ -52,7 +52,9 @@ static bool showDockDivider;
 static bool showInAppSwitcher;
 static long long numberOfRecents;
 static int springboardIconsLayoutPortrait;
+static int springboardIconsBottomSpacingPortrait;
 static int springboardIconsLayoutLandscape;
+static int springboardIconsBottomSpacingLandscape;
 
 static bool gestureToShowDockInApps;
 
@@ -105,7 +107,9 @@ static bool gestureToShowDockInApps;
 		highlightView.layer.hidden = YES;
 	} else if ( dockStyle == 1 ) {
 		UIView *backgroundView = [self valueForKey:@"_backgroundView"];
+		UIView *highlightView = [self valueForKey:@"_highlightView"];
 		backgroundView.layer.cornerRadius = 30;
+		highlightView.layer.hidden = YES;
 	}
 }
 %end
@@ -154,8 +158,7 @@ static bool gestureToShowDockInApps;
 	unsigned long long origValue = %orig;
 	if ( [self numberOfPortraitRows] == 1 && allowMoreIcons && origValue == 4 && dockStyle == 2 ) {
 		return 8;
-	}
-	if ( [self numberOfPortraitRows] == 1 && allowMoreIcons && origValue == 4 && ( ( dockStyle == 1 ) || ( dockStyle == 2 ) ) ) {
+	} else if ( [self numberOfPortraitRows] == 1 && allowMoreIcons && origValue == 4 && ( ( dockStyle == 1 ) || ( dockStyle == 2 ) ) ) {
 		return 5;
 	}
 	return origValue;
@@ -242,13 +245,19 @@ static bool gestureToShowDockInApps;
 - (UIEdgeInsets)layoutInsetsForOrientation:(long long)arg1 {
 	UIEdgeInsets origValue = %orig;
 	if ( [self.iconLocation isEqual:@"SBIconLocationRoot"] ) {
-//		double pageControlHeight = [[kIconController _rootFolderController] pageControl].defaultHeight;
-//		returns 37 on iOS13 but it's unaccessible on iOS14 so - at least for now - I'm using 37 without reading this value
 		if ( dockStyle == 2 ) {
-			if ( ( UIDeviceOrientationIsPortrait(arg1) && springboardIconsLayoutPortrait == 2 ) || ( UIDeviceOrientationIsLandscape(arg1) && springboardIconsLayoutLandscape == 2 ) ) {
-				origValue.bottom = 37 + kFloatingDockController.floatingDockHeight + kFloatingDockController.preferredVerticalMargin;
-			} else if ( ( UIDeviceOrientationIsPortrait(arg1) && springboardIconsLayoutPortrait == 1 ) || ( UIDeviceOrientationIsLandscape(arg1) && springboardIconsLayoutLandscape == 1 ) ) {
-				origValue.bottom = kFloatingDockController.maximumFloatingDockHeight;
+			if ( UIDeviceOrientationIsPortrait(arg1) ) {
+				if ( springboardIconsLayoutPortrait == 2 ) {
+					origValue.bottom = kFloatingDockController.floatingDockHeight + kFloatingDockController.preferredVerticalMargin + springboardIconsBottomSpacingPortrait;
+				} else if ( springboardIconsLayoutPortrait == 1 ) {
+					origValue.bottom = springboardIconsBottomSpacingPortrait;
+				}
+			} else if ( UIDeviceOrientationIsLandscape(arg1) ) {
+				if ( springboardIconsLayoutLandscape == 2 ) {
+					origValue.bottom = kFloatingDockController.floatingDockHeight + kFloatingDockController.preferredVerticalMargin + springboardIconsBottomSpacingLandscape;
+				} else if ( springboardIconsLayoutLandscape == 1 ) {
+					origValue.bottom = springboardIconsBottomSpacingLandscape;
+				}
 			}
 		}
 		if ( ( ( ( dockStyle == 0 ) || ( dockStyle == 1 ) ) && UIDeviceOrientationIsLandscape(arg1) ) || dockStyle == 404 ) {
@@ -360,12 +369,18 @@ static bool gestureToShowDockInApps;
 	CGRect origValue = %orig;
 	UIInterfaceOrientation orientation = [(SpringBoard*)[UIApplication sharedApplication] activeInterfaceOrientation];
 	if ( dockStyle == 2 ) {
-		if ( ( UIDeviceOrientationIsPortrait(orientation) && springboardIconsLayoutPortrait == 2 ) || ( UIDeviceOrientationIsLandscape(orientation) && springboardIconsLayoutLandscape == 2 ) ) {
-			double pageControlHeight = 37;
-			origValue.size.height = [UIScreen mainScreen].bounds.size.height - pageControlHeight - [kFloatingDockController12 floatingDockHeight] - [kFloatingDockController12 preferredVerticalMargin];
-		} else if ( ( UIDeviceOrientationIsPortrait(orientation) && springboardIconsLayoutPortrait == 1 ) || ( UIDeviceOrientationIsLandscape(orientation) && springboardIconsLayoutLandscape == 1 ) ) {
-			double maximumFloatingDockHeight = [kFloatingDockController12 maximumFloatingDockHeight];
-			origValue.size.height = [UIScreen mainScreen].bounds.size.height - maximumFloatingDockHeight;
+		if ( UIDeviceOrientationIsPortrait(orientation) ) {
+			if ( springboardIconsLayoutPortrait == 2 ) {
+				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingPortrait - [kFloatingDockController12 floatingDockHeight] - [kFloatingDockController12 preferredVerticalMargin];
+			} else if ( springboardIconsLayoutPortrait == 1 ) {
+				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingPortrait;
+			}
+		} else if ( UIDeviceOrientationIsLandscape(orientation) ) {
+			if ( springboardIconsLayoutLandscape == 2 ) {
+				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingLandscape - [kFloatingDockController12 floatingDockHeight] - [kFloatingDockController12 preferredVerticalMargin];
+			} else if ( springboardIconsLayoutLandscape == 1 ) {
+				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingLandscape;
+			}
 		}
 		if ( UIDeviceOrientationIsLandscape(orientation) && springboardIconsLayoutLandscape ) {
 			origValue.size.width = [UIScreen mainScreen].bounds.size.width;
@@ -471,7 +486,9 @@ void SettingsChanged() {
 	showInAppSwitcher = [([tweakSettings objectForKey:@"showInAppSwitcher"] ?: @(YES)) boolValue];
 	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
 	springboardIconsLayoutPortrait = [([tweakSettings valueForKey:@"springboardIconsLayoutPortrait"] ?: @(2)) integerValue];
+	springboardIconsBottomSpacingPortrait = [([tweakSettings valueForKey:@"springboardIconsBottomSpacingPortrait"] ?: @(37)) integerValue];
 	springboardIconsLayoutLandscape = [([tweakSettings valueForKey:@"springboardIconsLayoutLandscape"] ?: @(0)) integerValue];
+	springboardIconsBottomSpacingLandscape = [([tweakSettings valueForKey:@"springboardIconsBottomSpacingLandscape"] ?: @(37)) integerValue];
 	gestureToShowDockInApps = [([tweakSettings objectForKey:@"gestureToShowDockInApps"] ?: @(YES)) boolValue];
 }
 
