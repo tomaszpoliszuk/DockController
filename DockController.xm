@@ -103,8 +103,12 @@ static bool gestureToShowDockInApps;
 	if ( !showDockBackground ) {
 		UIView *backgroundView = [self valueForKey:@"_backgroundView"];
 		UIView *highlightView = [self valueForKey:@"_highlightView"];
+		UIView *accessibilityBackgroundView = [self valueForKey:@"_accessibilityBackgroundView"];
+		UIImageView *backgroundImageView = [self valueForKey:@"_backgroundImageView"];
 		backgroundView.layer.hidden = YES;
 		highlightView.layer.hidden = YES;
+		accessibilityBackgroundView.layer.hidden = YES;
+		backgroundImageView.layer.hidden = YES;
 	} else if ( dockStyle == 1 ) {
 		UIView *backgroundView = [self valueForKey:@"_backgroundView"];
 		UIView *highlightView = [self valueForKey:@"_highlightView"];
