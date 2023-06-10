@@ -1,0 +1,16 @@
+{
+	ENABLE_TWEAK = "Enable Tweak";
+	DOCK_TYPE = "Dock Type";
+	DOCK_BACKGROUND = "Dock Background";
+	DOCK_DIVIDER = "Dock Divider";
+	GESTURE_TO_SHOW_DOCK_IN_APPS = "Gesture to show Dock in Apps";
+	SHOW_IN_APP_SWITCHER = "Show in App Switcher";
+	SHOW_APP_LIBRARY_IN_DOCK = "Show App Library in Dock";
+	SHOW_SUGGESTED_AND_RECENT_APPS_IN_DOCK = "Show Suggested and Recent Apps in Dock";
+	RESET_SETTINGS = "Reset Settings";
+	RELATED_LINKS = "Related Links";
+	SOURCE_CODE = "Source Code";
+	KNOWN_ISSUES = "Known Issues";
+	TOMASZ_POLISZUK_AT_BIGBOSS = "Tomasz Poliszuk @ BigBoss";
+	TOMASZ_POLISZUK_AT_GITHUB = "Tomasz Poliszuk @ Github";
+}

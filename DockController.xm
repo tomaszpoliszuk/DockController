@@ -1,10 +1,9 @@
 /* Dock Controller - Control Dock on iOS/iPadOS
- * Copyright (C) 2020 Tomasz Poliszuk
+ * (c) Copyright 2020-2023 Tomasz Poliszuk
  *
  * Dock Controller is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * the Free Software Foundation, version 3 of the License.
  *
  * Dock Controller is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,294 +15,448 @@
  */
 
 
-#import "DockController.h"
-
-#define kIsiOS14AndUp (kCFCoreFoundationVersionNumber >= 1740.00)
-#define kIsiOS13AndUp (kCFCoreFoundationVersionNumber >= 1665.15)
-
-#define kIconController [%c(SBIconController) sharedInstance]
-#define kFloatingDockController [kIconController floatingDockController]
-#define kDismissFloatingDockIfPresented [kFloatingDockController _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil]
-#define kPresentFloatingDockIfDismissed [kFloatingDockController _presentFloatingDockIfDismissedAnimated:YES completionHandler:nil]
-#define kHomeScreenSupportsRotation [[%c(SpringBoard) sharedApplication] homeScreenSupportsRotation]
-#define kMainSwitcherViewController [%c(SBMainSwitcherViewController) sharedInstance]
-#define kIsMainSwitcherVisible [kMainSwitcherViewController isMainSwitcherVisible]
-
-//	iOS12
-#define kIsShowingSpotlightOrTodayView [kIconController isShowingSpotlightOrTodayView]
-#define kIsVisible [kMainSwitcherViewController isVisible]
-#define kFloatingDockController12 [%c(SBFloatingDockController) sharedInstance]
-#define kDismissFloatingDockIfPresented12 [kFloatingDockController12 _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil]
-#define kPresentFloatingDockIfDismissed12 [kFloatingDockController12 _presentFloatingDockIfDismissedAnimated:YES completionHandler:nil]
-
-NSString *const domainString = @"com.tomaszpoliszuk.dockcontroller";
-
-NSMutableDictionary *tweakSettings;
-
-static bool haveFaceID;
+#import "headers/DockController.h"
 
 static bool enableTweak;
 
-static long long dockStyle;
-static bool showDockBackground;
-static bool allowMoreIcons;
+static long long dockType;
+static bool isDockEnabled;
 
-static bool showDockDivider;
-static bool showInAppSwitcher;
-static long long numberOfRecents;
-static int springboardIconsLayoutPortrait;
-static int springboardIconsBottomSpacingPortrait;
-static int springboardIconsLayoutLandscape;
-static int springboardIconsBottomSpacingLandscape;
+static bool isFloatingDock;
 
-static bool gestureToShowDockInApps;
+static long long dockBackgroundAppearanceStyle;
+static long long dockBackgroundType;
 
-%hook SBHIconModel
-- (bool)supportsDock {
-	bool origValue = %orig;
-	if ( dockStyle == 404 ) {
-		return NO;
+static bool iPadDockShowDivider;
+
+static long long iPadDockMaximumItems = 20;
+static long long iPadDockMaximumItemsInRecents;
+
+static bool iPadDockShowInAppSwitcher;
+
+static bool iPadDockGestureToShowInApps;
+
+static long long iPhoneMaximumItems = 5;
+
+void SettingsChanged() {
+
+	NSUserDefaults *tweakSettings = [[NSUserDefaults alloc] initWithSuiteName:kPackage];
+
+	enableTweak = [([tweakSettings objectForKey:@"enableTweak"] ?: @(YES)) boolValue];
+
+	dockType = [([tweakSettings valueForKey:@"dockType"] ?: @(3)) integerValue];
+
+	dockBackgroundType = [([tweakSettings valueForKey:@"dockBackgroundType"] ?: @(1)) integerValue];
+
+	dockBackgroundAppearanceStyle = [([tweakSettings valueForKey:@"dockBackgroundAppearanceStyle"] ?: @(999)) integerValue];
+
+	iPadDockShowDivider = [([tweakSettings objectForKey:@"iPadDockShowDivider"] ?: @(YES)) boolValue];
+
+	iPadDockMaximumItemsInRecents = [([tweakSettings valueForKey:@"iPadDockMaximumItemsInRecents"] ?: @(3)) integerValue];
+
+	iPadDockGestureToShowInApps = [([tweakSettings objectForKey:@"iPadDockGestureToShowInApps"] ?: @(YES)) boolValue];
+	iPadDockShowInAppSwitcher = [([tweakSettings objectForKey:@"iPadDockShowInAppSwitcher"] ?: @(YES)) boolValue];
+
+	isFloatingDock = ( dockType == 3 );
+
+	isDockEnabled = dockType;
+
+	[NSNotificationCenter.defaultCenter postNotificationName:@"com.tomaszpoliszuk.dockcontroller.settingschanged" object:nil];
+
+}
+
+
+
+%group noDock
+
+%hook SBHDefaultIconListLayoutProvider
+- (id)layoutForIconLocation:(NSString *)iconLocation {
+	id origValue = %orig;
+	if ( [iconLocation isEqual:@"SBIconLocationRoot"] ) {
+		SBIconListGridLayoutConfiguration *layoutConfiguration = [origValue layoutConfiguration];
+		UIEdgeInsets portraitLayoutInsets = [layoutConfiguration portraitLayoutInsets];
+		UIEdgeInsets landscapeLayoutInsets = [layoutConfiguration landscapeLayoutInsets];
+		[layoutConfiguration setPortraitLayoutInsets:UIEdgeInsetsMake(portraitLayoutInsets.top, portraitLayoutInsets.left, 53, portraitLayoutInsets.right)];
+		[layoutConfiguration setLandscapeLayoutInsets:UIEdgeInsetsMake(landscapeLayoutInsets.top, landscapeLayoutInsets.left, 42, landscapeLayoutInsets.right)];
+		if ([%c(SBIconListFlowExtendedLayout) class]) {
+			return [[%c(SBIconListFlowExtendedLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+		} else {
+			return [[%c(SBIconListFlowLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+		}
 	}
 	return origValue;
 }
+
 %end
+
+%hook SBDockView
++ (double)defaultHeight {
+	return 0;
+}
+- (double)dockHeight {
+	return 0;
+}
+%end
+
+%end
+
+
+
+%group dockEnabledOrNot
 
 %hook SBRootFolder
 - (bool)supportsDock {
-	bool origValue = %orig;
-	if ( dockStyle == 404 ) {
-		return NO;
-	}
-	return origValue;
+	return isDockEnabled;
 }
 %end
 
 %hook SBRootFolderWithDock
 - (bool)supportsDock {
-	bool origValue = %orig;
-	if ( dockStyle == 404 ) {
-		return NO;
-	}
-	return origValue;
+	return isDockEnabled;
 }
 %end
 
-%hook SBDockView
-- (bool)isDockInset {
-	bool origValue = %orig;
-	if ( dockStyle == 0 && haveFaceID ) {
-		return NO;
-	} else if ( dockStyle == 1 && !haveFaceID ) {
-		return YES;
-	}
-	return origValue;
-}
-- (void)_updateCornerRadii {
-	%orig;
-	if ( !showDockBackground ) {
-		UIView *backgroundView = [self valueForKey:@"_backgroundView"];
-		UIView *highlightView = [self valueForKey:@"_highlightView"];
-		UIView *accessibilityBackgroundView = [self valueForKey:@"_accessibilityBackgroundView"];
-		UIImageView *backgroundImageView = [self valueForKey:@"_backgroundImageView"];
-		backgroundView.layer.hidden = YES;
-		highlightView.layer.hidden = YES;
-		accessibilityBackgroundView.layer.hidden = YES;
-		backgroundImageView.layer.hidden = YES;
-	} else if ( dockStyle == 1 ) {
-		UIView *backgroundView = [self valueForKey:@"_backgroundView"];
-		UIView *highlightView = [self valueForKey:@"_highlightView"];
-		backgroundView.layer.cornerRadius = 30;
-		highlightView.layer.hidden = YES;
-	}
-}
 %end
+
+
+
+%group iPhoneOriPadDock
 
 %hook SBFloatingDockController
 + (bool)isFloatingDockSupported {
-	bool origValue = %orig;
-	if ( dockStyle == 2 ) {
-		return YES;
+	return isFloatingDock;
+}
+%end
+
+%end
+
+
+
+%group floatingDockMaximumItems
+
+%hook SBFloatingDockIconListView
++ (unsigned long long)maxIcons {
+	return iPadDockMaximumItems;
+}
+- (unsigned long long)iconColumnsForCurrentOrientation {
+	return iPadDockMaximumItems;
+}
+- (unsigned long long)iconsInRowForSpacingCalculation {
+	return [self visibleIcons].count;
+}
+%end
+
+%hook SBIconListModel
+- (id)initWithFolder:(id)folder maxIconCount:(unsigned long long)arg2 {
+	id origValue = %orig;
+	if ( [folder isMemberOfClass:%c(SBRootFolderWithDock)] ) {
+		return %orig(folder, iPadDockMaximumItems);
 	}
 	return origValue;
+}
+%end
+
+%hook SBHDefaultIconListLayoutProvider
+- (id)layoutForIconLocation:(NSString *)iconLocation {
+	id origValue = %orig;
+	if ( [iconLocation isEqual:@"SBIconLocationFloatingDock"] ) {
+		SBIconListGridLayoutConfiguration *layoutConfiguration = [origValue layoutConfiguration];
+		[layoutConfiguration setNumberOfPortraitColumns:iPadDockMaximumItems];
+		return [[%c(SBIconListFlowLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+	}
+	return origValue;
+}
+%end
+
+%end
+
+
+
+%group floatingDockMaximumSuggestionsItems
+
+%hook SBFloatingDockSuggestionsViewController
+- (unsigned long long)maxNumberOfIcons {
+	return iPadDockMaximumItemsInRecents;
+}
+- (id)initWithNumberOfRecents:(unsigned long long)arg1 iconController:(id)arg2 applicationController:(id)arg3 transitionCoordinator:(id)arg4 suggestionsModel:(id)arg5 {
+	return %orig(iPadDockMaximumItemsInRecents, arg2, arg3, arg4, arg5);
+}
+%end
+
+%hook SBRecentDisplayItemsController
+- (id)initWithRemovalPersonality:(long long)arg1 movePersonality:(long long)arg2 transitionFromSources:(id)arg3 maxDisplayItems:(unsigned long long)arg4 eventSource:(id)arg5 applicationController:(id)arg6 {
+	return %orig(arg1, arg2, arg3, iPadDockMaximumItemsInRecents, arg5, arg6);
+}
+%end
+
+%hook SBHDefaultIconListLayoutProvider
+- (id)layoutForIconLocation:(NSString *)iconLocation {
+	id origValue = %orig;
+	if ( [iconLocation isEqual:@"SBIconLocationFloatingDockSuggestions"] ) {
+		SBIconListGridLayoutConfiguration *layoutConfiguration = [origValue layoutConfiguration];
+		[layoutConfiguration setNumberOfPortraitRows:1];
+		[layoutConfiguration setNumberOfPortraitColumns:iPadDockMaximumItemsInRecents];
+		return [[%c(SBIconListFlowLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+	}
+	return origValue;
+}
+%end
+
+%hook SBDockSuggestionsIconListView
++ (unsigned long long)maxIcons {
+	return iPadDockMaximumItemsInRecents;
+}
+- (SBIconListFlowLayout *)layout {
+	return [[%c(SBHDefaultIconListLayoutProvider) frameworkFallbackInstance] layoutForIconLocation:[self iconLocation]];
+}
+- (id)initWithModel:(SBIconListModel *)model layoutProvider:(id)layoutProvider iconLocation:(id)iconLocation orientation:(long long)orientation iconViewProvider:(id)iconViewProvider {
+	SBIconListModel *listModel = [[%c(SBIconListModel) alloc] initWithFolder:nil maxIconCount:iPadDockMaximumItemsInRecents];
+	return %orig(listModel, layoutProvider, iconLocation, orientation, iconViewProvider);
+}
+%end
+
+%hook SBFloatingDockSuggestionsModel
+- (id)initWithMaximumNumberOfSuggestions:(unsigned long long)arg1 iconController:(id)arg2 recentsController:(id)arg3 recentsDataStore:(id)arg4 recentsDefaults:(id)arg5 floatingDockDefaults:(id)arg6 appSuggestionManager:(id)arg7 analyticsClient:(id)arg8 {
+	return %orig(iPadDockMaximumItemsInRecents, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+}
+- (id)initWithMaximumNumberOfSuggestions:(unsigned long long)arg1 iconController:(id)arg2 recentsController:(id)arg3 recentsDataStore:(id)arg4 recentsDefaults:(id)arg5 floatingDockDefaults:(id)arg6 appSuggestionManager:(id)arg7 analyticsClient:(id)arg8 applicationController:(id)arg9 {
+	return %orig(iPadDockMaximumItemsInRecents, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+}
+- (id)initWithMaximumNumberOfSuggestions:(unsigned long long)arg1 iconController:(id)arg2 recentsController:(id)arg3 recentsDataStore:(id)arg4 recentsDefaults:(id)arg5 floatingDockDefaults:(id)arg6 appSuggestionManager:(id)arg7 applicationController:(id)arg8 {
+	return %orig(iPadDockMaximumItemsInRecents, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+}
+%end
+
+%end
+
+
+
+%group iPhoneDockMaximumItems
+
+%hook SBRootFolderDockIconListView
++ (unsigned long long)maxIcons {
+	return iPhoneMaximumItems;
+}
++ (unsigned long long)maxVisibleIconRowsInterfaceOrientation:(long long)orientation {
+	unsigned long long origValue = %orig;
+	if ( UIDeviceOrientationIsLandscape(orientation) ) {
+		return iPhoneMaximumItems;
+	}
+	return origValue;
+}
+- (unsigned long long)iconsInRowForSpacingCalculation {
+	return [self visibleIcons].count;
+}
+%end
+
+%hook SBIconListModel
+- (id)initWithFolder:(id)folder maxIconCount:(unsigned long long)maxIconCount {
+	id origValue = %orig;
+	if ( [folder isMemberOfClass:%c(SBRootFolderWithDock)] && maxIconCount == 4 ) {
+		return %orig(folder, iPhoneMaximumItems);
+	}
+	return origValue;
+}
+%end
+
+%hook SBHDefaultIconListLayoutProvider
+- (id)layoutForIconLocation:(NSString *)iconLocation {
+	id origValue = %orig;
+	if ( [iconLocation isEqual:@"SBIconLocationDock"] ) {
+		SBIconListGridLayoutConfiguration *layoutConfiguration = [origValue layoutConfiguration];
+		[layoutConfiguration setNumberOfPortraitColumns:iPhoneMaximumItems];
+		return [[%c(SBIconListFlowLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+	}
+	return origValue;
+}
+%end
+
+%hook SBRootFolderDockIconListView
+- (CGSize)iconSpacing {
+	CGSize origValue = %orig;
+	if ( [self visibleIcons].count > 4 ) {
+		double newSize = [[%c(UIScreen) mainScreen] bounds].size.width / 40;
+		origValue.width = newSize;
+		origValue.height = newSize;
+	}
+	return origValue;
+}
+%end
+
+%end
+
+
+
+%group floatingDockDivider
+
+%hook SBFloatingDockView
+%new
+- (void)_DC_updateDividerVisualStyling {
+	UIView *dividerView = [self dividerView];
+	[dividerView setHidden:!iPadDockShowDivider];
+}
+- (id)initWithFrame:(CGRect)frame {
+	if ( ( self = %orig ) ) {
+		[self _DC_updateDividerVisualStyling];
+		[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(_DC_updateDividerVisualStyling) name:@"com.tomaszpoliszuk.dockcontroller.settingschanged" object:nil];
+	}
+	return self;
+}
+%end
+
+%end
+
+
+
+%group floatingDockBackground
+
+%hook SBFloatingDockView
+- (id)initWithFrame:(CGRect)frame {
+	if ( ( self = %orig ) ) {
+		[self _DC_updateBackgroundVisualStyling];
+		[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(_DC_updateBackgroundVisualStyling) name:@"com.tomaszpoliszuk.dockcontroller.settingschanged" object:nil];
+	}
+	return self;
+}
+%new
+- (void)_DC_updateBackgroundVisualStyling {
+	SBFloatingDockPlatterView *mainPlatterView = [self mainPlatterView];
+	UIView *backgroundView = [mainPlatterView backgroundView];
+	[backgroundView setHidden:(dockBackgroundType != 1)];
+	[self _DC_updateBackgroundUserInterfaceStyle];
+}
+%new
+- (void)_DC_updateBackgroundUserInterfaceStyle {
+	if ( @available(iOS 13, *) ) {
+		SBFloatingDockPlatterView *mainPlatterView = [self mainPlatterView];
+		UIView *backgroundView = [mainPlatterView backgroundView];
+		if ( dockBackgroundAppearanceStyle == 96 ) {
+			if ( [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleDark ) {
+				[backgroundView setOverrideUserInterfaceStyle:1];
+			} else if ( [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleLight ) {
+				[backgroundView setOverrideUserInterfaceStyle:2];
+			}
+		} else if ( dockBackgroundAppearanceStyle == 999 ) {
+			[backgroundView setOverrideUserInterfaceStyle:[UITraitCollection currentTraitCollection].userInterfaceStyle];
+		} else if ( dockBackgroundAppearanceStyle != 999 ) {
+			[backgroundView setOverrideUserInterfaceStyle:dockBackgroundAppearanceStyle];
+		}
+	}
+}
+- (void)_dynamicUserInterfaceTraitDidChange {
+	%orig;
+	[self _DC_updateBackgroundVisualStyling];
+}
+- (void)setNeedsLayout {
+	%orig;
+	[self _DC_updateBackgroundUserInterfaceStyle];
 }
 %end
 
 %hook SBFloatingDockPlatterView
-- (id)backgroundView {
-	id origValue = %orig;
-	if ( !showDockBackground ) {
-		return nil;
-	}
-	return origValue;
-}
-%end
-
-%hook SBFloatingDockView
-- (void)updateDividerVisualStyling {
-	if ( !showDockDivider && dockStyle == 2 ) {
-		return;
-	}
+- (void)setBackgroundView:(UIView *)backgroundView {
 	%orig;
+	backgroundView.clipsToBounds = YES;
 }
 %end
 
-%hook SBIconListView
-- (unsigned long long)maximumIconCount {
-	unsigned long long origValue = %orig;
-	if ( [ self.iconLocation isEqual:@"SBIconLocationDock" ] && ( ( dockStyle == 1 ) || ( dockStyle == 2 ) ) && allowMoreIcons ) {
-		return 5;
+%end
+
+
+
+%group iPhoneDockBackground
+
+%hook SBDockView
+
+- (id)initWithDockListView:(id)arg1 forSnapshot:(bool)arg2 {
+	if ( ( self = %orig ) ) {
+		[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(_DC_updateBackgroundVisualStyling) name:@"com.tomaszpoliszuk.dockcontroller.settingschanged" object:nil];
 	}
-	return origValue;
+	return self;
+}
+- (void)willMoveToWindow:(id)arg1 {
+	%orig;
+	[self _DC_updateBackgroundVisualStyling];
+}
+- (void)_dynamicUserInterfaceTraitDidChange {
+	%orig;
+	[self _DC_updateBackgroundVisualStyling];
+}
+- (void)layoutSubviews {
+	%orig;
+	[self _DC_updateBackgroundVisualStyling];
+}
+%new
+- (void)_DC_updateBackgroundVisualStyling {
+	UIView *backgroundView;
+	if ( [self respondsToSelector:@selector(backgroundView)] ) {
+		backgroundView = [self backgroundView];
+	} else {
+		backgroundView = [self valueForKey:@"_backgroundView"];
+	}
+	UIView *highlightView = [self valueForKey:@"_highlightView"];
+	backgroundView.layer.masksToBounds = YES;
+
+	[backgroundView setHidden:(dockBackgroundType != 1)];
+	[highlightView setHidden:(dockBackgroundType != 1)];
+	[self _DC_updateBackgroundUserInterfaceStyle];
+}
+%new
+- (void)_DC_updateBackgroundUserInterfaceStyle {
+	if ( @available(iOS 13, *) ) {
+		UIView *backgroundView = [self backgroundView];
+		if ( dockBackgroundAppearanceStyle == 96 ) {
+ 			if ( [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleDark ) {
+				[backgroundView setOverrideUserInterfaceStyle:1];
+			} else if ( [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleLight ) {
+				[backgroundView setOverrideUserInterfaceStyle:2];
+			}
+		} else if ( dockBackgroundAppearanceStyle == 999 ) {
+			[backgroundView setOverrideUserInterfaceStyle:[UITraitCollection currentTraitCollection].userInterfaceStyle];
+		} else if ( dockBackgroundAppearanceStyle != 999 ) {
+			[backgroundView setOverrideUserInterfaceStyle:dockBackgroundAppearanceStyle];
+		}
+	}
 }
 %end
 
-%hook SBIconListGridLayoutConfiguration
-- (unsigned long long)numberOfPortraitColumns {
-	unsigned long long origValue = %orig;
-	if ( [self numberOfPortraitRows] == 1 && allowMoreIcons && origValue == 4 && dockStyle == 2 ) {
-		return 8;
-	} else if ( [self numberOfPortraitRows] == 1 && allowMoreIcons && origValue == 4 && ( ( dockStyle == 1 ) || ( dockStyle == 2 ) ) ) {
-		return 5;
-	}
-	return origValue;
-}
-- (unsigned long long)numberOfLandscapeColumns {
-	unsigned long long origValue = %orig;
-	if ( [self numberOfPortraitRows] == 6 && [self numberOfPortraitColumns] == 4 && dockStyle == 2 && springboardIconsLayoutLandscape ) {
-		[self setNumberOfLandscapeRows:3];
-		return 8;
-	}
-	return origValue;
-}
 %end
+
+
+
+%group floatingDockGestureInAppsModern
 
 %hook SBHomeGestureSettings
-- (void)setHomeGestureEnabled:(bool)arg1 {
-	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( platform.homeButtonType == 1 && dockStyle == 2 ) {
-		%orig(gestureToShowDockInApps);
-		return;
+- (bool)isHomeGestureEnabled {
+	if ( [[%c(SBLockScreenManager) sharedInstanceIfExists] isLockScreenVisible] ) {
+		return NO;
 	}
-	%orig;
+	return iPadDockGestureToShowInApps;
 }
 %end
 
 %hook SBFluidSwitcherViewController
 - (bool)isFloatingDockGesturePossible {
-	bool origValue = %orig;
-	BSPlatform *platform = [NSClassFromString(@"BSPlatform") sharedInstance];
-	if ( platform.homeButtonType == 2 && dockStyle == 2 ) {
-		return gestureToShowDockInApps;
+	if ( [[%c(SBMainSwitcherViewController) sharedInstanceIfExists] isAnySwitcherVisible] ) {
+		return NO;
 	}
-	return origValue;
+	return iPadDockGestureToShowInApps;
 }
-%end
-
-%group iOSRecents
-
-%hook SBFloatingDockSuggestionsModel
-- (id)initWithMaximumNumberOfSuggestions:(unsigned long long)arg1 iconController:(id)arg2 recentsController:(id)arg3 recentsDataStore:(id)arg4 recentsDefaults:(id)arg5 floatingDockDefaults:(id)arg6 appSuggestionManager:(id)arg7 analyticsClient:(id)arg8 applicationController:(id)arg9 {
-//	this one can't be wrapped in if statement - that's why this code didn't worked before when I was testing it, so credits go to brian9206 - developer of HomeDockX - for make me realise that this is correct place but need to be implemented in specific way
-	return %orig(numberOfRecents, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+- (bool)isFloatingDockSupported {
+	return iPadDockGestureToShowInApps;
 }
 %end
 
 %end
 
-%group iOSNoRecents
 
-%hook SBFloatingDockSuggestionsModel
-- (void)_setRecentsEnabled:(bool)arg1 {
-	%orig(NO);
-}
-%end
 
-%end
-
-%group iOS13
-
-%hook SBHRootFolderVisualConfiguration
-- (UIEdgeInsets)dockBackgroundViewInsets {
-	UIEdgeInsets origValue = %orig;
-	if ( dockStyle == 1 && !haveFaceID ) {
-		origValue.top = origValue.top - 7;
-		origValue.left = origValue.left + 7;
-		origValue.bottom = origValue.bottom + 7;
-		origValue.right = origValue.right + 7;
-	}
-	return origValue;
-}
-- (UIEdgeInsets)dockListViewInsets {
-	UIEdgeInsets origValue = %orig;
-	if ( dockStyle == 1 && !haveFaceID ) {
-		origValue.top = origValue.top - 7;
-		origValue.left = origValue.left + 7;
-		origValue.bottom = origValue.bottom + 7;
-		origValue.right = origValue.right + 7;
-	}
-	return origValue;
-}
-%end
-
-%hook SBIconListView
-- (UIEdgeInsets)layoutInsetsForOrientation:(long long)arg1 {
-	UIEdgeInsets origValue = %orig;
-	if ( [self.iconLocation isEqual:@"SBIconLocationRoot"] ) {
-		if ( dockStyle == 2 ) {
-			if ( UIDeviceOrientationIsPortrait(arg1) ) {
-				if ( springboardIconsLayoutPortrait == 2 ) {
-					origValue.bottom = kFloatingDockController.floatingDockHeight + kFloatingDockController.preferredVerticalMargin + springboardIconsBottomSpacingPortrait;
-				} else if ( springboardIconsLayoutPortrait == 1 ) {
-					origValue.bottom = springboardIconsBottomSpacingPortrait;
-				}
-			} else if ( UIDeviceOrientationIsLandscape(arg1) ) {
-				if ( springboardIconsLayoutLandscape == 2 ) {
-					origValue.bottom = kFloatingDockController.floatingDockHeight + kFloatingDockController.preferredVerticalMargin + springboardIconsBottomSpacingLandscape;
-				} else if ( springboardIconsLayoutLandscape == 1 ) {
-					origValue.bottom = springboardIconsBottomSpacingLandscape;
-				}
-			}
-		}
-		if ( ( ( ( dockStyle == 0 ) || ( dockStyle == 1 ) ) && UIDeviceOrientationIsLandscape(arg1) ) || dockStyle == 404 ) {
-			origValue.bottom = 37;
-		}
-	}
-	return origValue;
-}
-%end
-
-%hook SBFloatingDockView
-- (double)maximumInterIconSpacing {
-	double origValue = %orig;
-	if ( dockStyle == 2 && UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) && kHomeScreenSupportsRotation && springboardIconsLayoutLandscape ) {
-		return 13;
-	}
-	return origValue;
-}
-- (double)platterVerticalMargin {
-	double origValue = %orig;
-	if ( dockStyle == 2 && UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) && kHomeScreenSupportsRotation && springboardIconsLayoutLandscape ) {
-		return 5;
-	}
-	return origValue;
-}
-- (double)contentHeight {
-	double origValue = %orig;
-	if ( dockStyle == 2 ) {
-		return origValue - 10;
-	}
-	return origValue;
-}
-%end
+%group floatingDockInAppSwitcherModern
 
 %hook SBDeckSwitcherModifier
 - (bool)shouldConfigureInAppDockHiddenAssertion {
 //	works only for deck switcher
-	bool origValue = %orig;
-	if ( !showInAppSwitcher ) {
-		return YES;
-	}
-	return origValue;
+	return !iPadDockShowInAppSwitcher;
 }
 %end
 
@@ -311,12 +464,8 @@ static bool gestureToShowDockInApps;
 - (bool)isWindowVisible {
 //	triggers correctly but when grid switcher is opened from today/spotlight/library dock is showing back
 	bool origValue = %orig;
-	if ( !showInAppSwitcher ) {
-		if ( origValue ) {
-			if ( kIsMainSwitcherVisible ) {
-				kDismissFloatingDockIfPresented;
-			}
-		}
+	if ( !iPadDockShowInAppSwitcher && origValue && [[%c(SBMainSwitcherViewController) sharedInstanceIfExists] isAnySwitcherVisible] ) {
+		[[[%c(SBIconController) sharedInstanceIfExists] floatingDockController] _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil];
 	}
 	return origValue;
 }
@@ -326,10 +475,8 @@ static bool gestureToShowDockInApps;
 - (bool)isMainSwitcherVisible {
 //	works but triggers after switcher is visible - using this one to prevent reappearing of dock when grid switcher is opened from today/spotlight/library
 	bool origValue = %orig;
-	if ( !showInAppSwitcher ) {
-		if (origValue) {
-			kDismissFloatingDockIfPresented;
-		}
+	if ( !iPadDockShowInAppSwitcher && origValue) {
+		[[[%c(SBIconController) sharedInstanceIfExists] floatingDockController] _dismissFloatingDockIfPresentedAnimated:YES completionHandler:nil];
 	}
 	return origValue;
 }
@@ -339,14 +486,15 @@ static bool gestureToShowDockInApps;
 - (id)appLayoutToScrollToBeforeTransitioning {
 //	present dock back when last app was closed or when grid app switcher is empty
 	id origValue = %orig;
-	if ( !showInAppSwitcher && !origValue ) {
-		if (kIsiOS14AndUp) {
-			if (![kIconController isTodayOverlayPresented] && ![kIconController isLibraryOverlayPresented] && ![kIconController isAnySearchVisibleOrTransitioning]) {
-				kPresentFloatingDockIfDismissed;
+	if ( !iPadDockShowInAppSwitcher && !origValue ) {
+		SBIconController *iconController = [%c(SBIconController) sharedInstanceIfExists];
+		if ( @available(iOS 14, *) ) {
+			if (![iconController isTodayOverlayPresented] && ![iconController isLibraryOverlayPresented] && ![iconController isAnySearchVisibleOrTransitioning]) {
+				[[iconController floatingDockController] _presentFloatingDockIfDismissedAnimated:YES completionHandler:nil];
 			}
 		} else {
-			if ( ![[kIconController iconManager] isShowingSpotlightOrTodayView] ) {
-				kPresentFloatingDockIfDismissed;
+			if ( ![[iconController iconManager] isShowingSpotlightOrTodayView] ) {
+				[[iconController floatingDockController] _presentFloatingDockIfDismissedAnimated:YES completionHandler:nil];
 			}
 		}
 	}
@@ -356,118 +504,150 @@ static bool gestureToShowDockInApps;
 
 %end
 
-%group iOS12
 
-%hook SBDockView
-- (double)dockHeight {
+
+%group floatingDockLayoutFixModern
+
+%hook SBFloatingDockView
+- (double)maximumInterIconSpacing {
+	return 12;
+}
+- (double)contentHeight {
 	double origValue = %orig;
-	if ( dockStyle == 404 ) {
-		return 0;
+	return origValue - 8;
+}
+%end
+
+%end
+
+
+
+%group floatingDockLayoutSmallScreenFixLegacy
+
+%hook SBFloatingDockIconListView
+- (UIEdgeInsets)layoutInsets {
+	UIEdgeInsets origValue = %orig;
+	if ( [[%c(UIScreen) mainScreen] bounds].size.width < 375 && [self isMemberOfClass:%c(SBFloatingDockIconListView)] ) {
+		double userIcons = [self visibleIcons].count;
+		double recentIIcons = [[%c(SBIconController) sharedInstanceIfExists] floatingDockSuggestionsListView].visibleIcons.count;
+		double totalIcons = userIcons + recentIIcons;
+		if ( userIcons > 2 && recentIIcons == 0 ) {
+		} else if ( userIcons == 2 && recentIIcons == 0 ) {
+			origValue.left = 80;
+			origValue.right = 80;
+		} else if ( userIcons < 4 && recentIIcons == 0 ) {
+			origValue.left = 50;
+			origValue.right = 50;
+		} else if ( totalIcons < 4 ) {
+			origValue.left = 30;
+		}
 	}
 	return origValue;
 }
 %end
+
+%hook SBFloatingDockView
+- (unsigned long long)minimumUserIconSpaces {
+	unsigned long long origValue = %orig;
+	if ( [[%c(UIScreen) mainScreen] bounds].size.width < 375 ) {
+		double userIcons = [self userIconListView].visibleIcons.count;
+		double recentIIcons = [self recentIconListView].visibleIcons.count;
+		if ( userIcons < 4 ) {
+			return 4 - recentIIcons;
+		}
+	}
+	return origValue;
+}
+%end
+
+%end
+
+
+
+%group iOS13OnlyFloatingDockHomeScreenLayoutFix
+
+%hook SBHDefaultIconListLayoutProvider
+- (id)layoutForIconLocation:(NSString *)iconLocation {
+	id origValue = %orig;
+	if ( [iconLocation isEqual:@"SBIconLocationRoot"] ) {
+		SBIconListGridLayoutConfiguration *layoutConfiguration = [origValue layoutConfiguration];
+		UIEdgeInsets portraitLayoutInsets = [layoutConfiguration portraitLayoutInsets];
+		double fixedBottom = [[%c(UIScreen) mainScreen] bounds].size.height / 3.9;
+		[layoutConfiguration setPortraitLayoutInsets:UIEdgeInsetsMake(portraitLayoutInsets.top, portraitLayoutInsets.left, fixedBottom, portraitLayoutInsets.right)];
+		if ([%c(SBIconListFlowExtendedLayout) class]) {
+			return [[%c(SBIconListFlowExtendedLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+		} else {
+			return [[%c(SBIconListFlowLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+		}
+	}
+	return origValue;
+}
+%end
+
+%end
+
+
+
+%group iPhoneDockHomeScreenLayoutFix
+
+%hook SBRootFolderView
+- (double)additionalScrollWidthToKeepVisibleInOneDirection {
+	return 0;
+}
+%end
+
+%end
+
+
+
+%group floatingDockHomeScreenLayoutFixLegacy
 
 %hook SBRootFolderView
 - (CGRect)_iconListFrameForPageRect:(CGRect)arg1 atIndex:(unsigned long long)arg2 {
 	CGRect origValue = %orig;
-	UIInterfaceOrientation orientation = [(SpringBoard*)[UIApplication sharedApplication] activeInterfaceOrientation];
-	if ( dockStyle == 2 ) {
-		if ( UIDeviceOrientationIsPortrait(orientation) ) {
-			if ( springboardIconsLayoutPortrait == 2 ) {
-				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingPortrait - [kFloatingDockController12 floatingDockHeight] - [kFloatingDockController12 preferredVerticalMargin];
-			} else if ( springboardIconsLayoutPortrait == 1 ) {
-				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingPortrait;
-			}
-		} else if ( UIDeviceOrientationIsLandscape(orientation) ) {
-			if ( springboardIconsLayoutLandscape == 2 ) {
-				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingLandscape - [kFloatingDockController12 floatingDockHeight] - [kFloatingDockController12 preferredVerticalMargin];
-			} else if ( springboardIconsLayoutLandscape == 1 ) {
-				origValue.size.height = [UIScreen mainScreen].bounds.size.height - springboardIconsBottomSpacingLandscape;
-			}
-		}
-		if ( UIDeviceOrientationIsLandscape(orientation) && springboardIconsLayoutLandscape ) {
-			origValue.size.width = [UIScreen mainScreen].bounds.size.width;
+	if ( [%c(SBFloatingDockController) respondsToSelector:@selector(sharedInstance)] ) {
+		SBFloatingDockController *floatingDockController = [%c(SBFloatingDockController) sharedInstance];
+		double maximumFloatingDockHeight = [floatingDockController maximumFloatingDockHeight];
+		if ( UIDeviceOrientationIsPortrait([self orientation]) ) {
+			origValue.size.height = [[%c(UIScreen) mainScreen] bounds].size.height - maximumFloatingDockHeight;
 		}
 	}
-	if ( ( ( ( dockStyle == 0 ) || ( dockStyle == 1 ) ) && UIDeviceOrientationIsLandscape(orientation) ) || dockStyle == 404 ) {
-		origValue.size.height = [UIScreen mainScreen].bounds.size.height - 37;
-	}
 	return origValue;
 }
 %end
 
-%hook SBDockIconListView
-+ (unsigned long long)maxIcons {
-	unsigned long long origValue = %orig;
-	if ( allowMoreIcons && ( ( dockStyle == 1 ) || ( dockStyle == 2 ) ) ) {
-		return 5;
-	}
-	return origValue;
-}
-- (unsigned long long)iconColumnsForCurrentOrientation {
-	unsigned long long origValue = %orig;
-	if ( allowMoreIcons && ( ( dockStyle == 1 ) || ( dockStyle == 2 ) ) ) {
-		return 5;
-	}
-	return origValue;
-}
 %end
 
-%hook SBFloatingDockIconListView
-+ (unsigned long long)maxIcons {
-	unsigned long long origValue = %orig;
-	if ( allowMoreIcons && dockStyle == 2 ) {
-		return 8;
-	}
-	return origValue;
-}
-- (unsigned long long)iconColumnsForCurrentOrientation {
-	unsigned long long origValue = %orig;
-	if ( allowMoreIcons && dockStyle == 2 ) {
-		return 8;
-	}
-	return origValue;
-}
-%end
 
-%hook SBDeckSwitcherPersonality
-- (bool)_isPerformingSlideOffTransitionFromSwitcherToHomeScreen {
-//	0 = home to switcher, switcher to app (tap), switcher to app (button), app to switcher, close app, close last app,
-//	1 = switcher to home (tap), switcher to home (button),
-//	nil = home to empty
-	bool origValue = %orig;
-	if ( !showInAppSwitcher && origValue && !kIsShowingSpotlightOrTodayView ) {
-//	show dock when user switches back to homescreen and today view or spotlight search are not open
-		kPresentFloatingDockIfDismissed12;
-	} else if ( !showInAppSwitcher && kIsVisible ) {
-//	hide dock when user opens deck app switcher
-		kDismissFloatingDockIfPresented12;
-	}
-	return origValue;
-}
-- (id)topMostAppLayout {
-//	show dock after last app is closed
+
+%group floatingDockHomeScreenLandscapeLayoutFixModern
+
+%hook SBHDefaultIconListLayoutProvider
+- (id)layoutForIconLocation:(NSString *)iconLocation {
 	id origValue = %orig;
-	if ( !showInAppSwitcher && !origValue && !kIsShowingSpotlightOrTodayView ) {
-		kPresentFloatingDockIfDismissed12;
+	if ( [iconLocation isEqual:@"SBIconLocationRoot"] ) {
+		SBIconListGridLayoutConfiguration *layoutConfiguration = [origValue layoutConfiguration];
+		[layoutConfiguration setNumberOfLandscapeRows:3];
+		[layoutConfiguration setNumberOfLandscapeColumns:8];
+		if ([%c(SBIconListFlowExtendedLayout) class]) {
+			return [[%c(SBIconListFlowExtendedLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+		} else {
+			return [[%c(SBIconListFlowLayout) alloc] initWithLayoutConfiguration:layoutConfiguration];
+		}
 	}
 	return origValue;
 }
 %end
 
-%hook SBGridSwitcherPersonality
-- (bool)_isPerformingSlideOffTransitionFromSwitcherToHomeScreen {
-//	0 = home to switcher, switcher to app (tap), switcher to app (button), app to switcher, close app, close last app,
-//	1 = switcher to home (tap), switcher to home (button),
-//	nil = home to empty
-	bool origValue = %orig;
-	if ( !showInAppSwitcher && origValue && !kIsShowingSpotlightOrTodayView ) {
-//	show dock when user switches back to homescreen and today view or spotlight search are not open
-		kPresentFloatingDockIfDismissed12;
-	} else if ( !showInAppSwitcher && kIsVisible ) {
-//	hide dock when user opens grid app switcher
-		kDismissFloatingDockIfPresented12;
+%hook SBIconListView
+- (UIEdgeInsets)layoutInsetsForOrientation:(long long)orientation {
+	UIEdgeInsets origValue = %orig;
+	if ( [self.iconLocation isEqual:@"SBIconLocationRoot"] ) {
+		SBFloatingDockController *floatingDockController = [[%c(SBIconController) sharedInstanceIfExists] floatingDockController];
+		double maximumFloatingDockHeight = [floatingDockController maximumFloatingDockHeight];
+		if ( UIDeviceOrientationIsLandscape(orientation) ) {
+			origValue.bottom = maximumFloatingDockHeight;
+		}
 	}
 	return origValue;
 }
@@ -475,26 +655,71 @@ static bool gestureToShowDockInApps;
 
 %end
 
-void SettingsChanged() {
-	haveFaceID = [[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/gsc.pearl-i-d-capability.list"];
 
-	NSUserDefaults *tweakSettings = [[NSUserDefaults alloc] initWithSuiteName:domainString];
 
-	enableTweak = [([tweakSettings objectForKey:@"enableTweak"] ?: @(YES)) boolValue];
+%group floatingDockHomeScreenLandscapeLayoutFixLegacy
 
-	dockStyle = [([tweakSettings valueForKey:@"dockStyle"] ?: @(999)) integerValue];
-	showDockBackground = [([tweakSettings objectForKey:@"showDockBackground"] ?: @(YES)) boolValue];
-	allowMoreIcons = [([tweakSettings objectForKey:@"allowMoreIcons"] ?: @(YES)) boolValue];
-
-	showDockDivider = [([tweakSettings objectForKey:@"showDockDivider"] ?: @(YES)) boolValue];
-	showInAppSwitcher = [([tweakSettings objectForKey:@"showInAppSwitcher"] ?: @(YES)) boolValue];
-	numberOfRecents = [([tweakSettings valueForKey:@"numberOfRecents"] ?: @(3)) integerValue];
-	springboardIconsLayoutPortrait = [([tweakSettings valueForKey:@"springboardIconsLayoutPortrait"] ?: @(2)) integerValue];
-	springboardIconsBottomSpacingPortrait = [([tweakSettings valueForKey:@"springboardIconsBottomSpacingPortrait"] ?: @(37)) integerValue];
-	springboardIconsLayoutLandscape = [([tweakSettings valueForKey:@"springboardIconsLayoutLandscape"] ?: @(0)) integerValue];
-	springboardIconsBottomSpacingLandscape = [([tweakSettings valueForKey:@"springboardIconsBottomSpacingLandscape"] ?: @(37)) integerValue];
-	gestureToShowDockInApps = [([tweakSettings objectForKey:@"gestureToShowDockInApps"] ?: @(YES)) boolValue];
+%hook SBRootFolderView
+- (CGRect)_scrollViewFrameForDockEdge:(unsigned long long)arg1 {
+	CGRect origValue = %orig;
+	origValue.size.width = [[%c(UIScreen) mainScreen] bounds].size.width;
+	return origValue;
 }
+%end
+
+%hook SBRootIconListView
++ (unsigned long long)iconColumnsForInterfaceOrientation:(long long)orientation {
+	unsigned long long origValue = %orig;
+	if ( UIDeviceOrientationIsLandscape(orientation) && ( origValue == 6 || origValue == 5 ) ) {
+		return 8;
+	}
+	return origValue;
+}
++ (unsigned long long)maxVisibleIconRowsInterfaceOrientation:(long long)orientation {
+	unsigned long long origValue = %orig;
+	if ( UIDeviceOrientationIsLandscape(orientation) && origValue == 4 ) {
+		return 3;
+	}
+	return origValue;
+}
++ (unsigned long long)iconRowsForInterfaceOrientation:(long long)orientation {
+	unsigned long long origValue = %orig;
+	if ( UIDeviceOrientationIsLandscape(orientation) && origValue == 4 ) {
+		return 3;
+	}
+	return origValue;
+}
+- (unsigned long long)iconColumnsForCurrentOrientation {
+	unsigned long long origValue = %orig;
+	if ( ( origValue == 6 || origValue == 5 ) && UIDeviceOrientationIsLandscape([self orientation]) ) {
+		return 8;
+	}
+	return origValue;
+}
+- (unsigned long long)iconRowsForCurrentOrientation {
+	unsigned long long origValue = %orig;
+	if ( origValue == 4 && UIDeviceOrientationIsLandscape([self orientation]) ) {
+		return 3;
+	}
+	return origValue;
+}
+%end
+
+%end
+
+
+
+%group iPhoneDockMaximumItemsLayoutFixLegacy
+
+%hook SBRootFolderDockIconListView
+- (CGPoint)originForIconAtCoordinate:(SBIconCoordinate)coordinate {
+	return [self originForIconAtCoordinate:coordinate numberOfIcons:[self iconsInRowForSpacingCalculation]];
+}
+%end
+
+%end
+
+
 
 %ctor {
 	SettingsChanged();
@@ -507,18 +732,50 @@ void SettingsChanged() {
 		CFNotificationSuspensionBehaviorDeliverImmediately
 	);
 	if ( enableTweak ) {
-		if (dockStyle == 2 ) {
-			if ( numberOfRecents == 0) {
-				%init(iOSNoRecents);
+		%init(dockEnabledOrNot);
+		if ( isDockEnabled ) {
+			%init(iPhoneOriPadDock);
+			if ( isFloatingDock ) {
+				%init(floatingDockMaximumItems);
+				%init(floatingDockMaximumSuggestionsItems);
+				%init(floatingDockDivider);
+				%init(floatingDockBackground);
+				if ( @available(iOS 13, *) ) {
+					%init(floatingDockGestureInAppsModern);
+					%init(floatingDockInAppSwitcherModern);
+					if ( @available(iOS 14, *) ) {
+					} else {
+						%init(iOS13OnlyFloatingDockHomeScreenLayoutFix);
+					}
+					if ( [[[%c(UIDevice) currentDevice] model] rangeOfString:@"iPad"].location == NSNotFound ) {
+						%init(floatingDockHomeScreenLandscapeLayoutFixModern);
+						if ( [[%c(BSPlatform) sharedInstance] homeButtonType] != 2 ) {
+							%init(floatingDockLayoutFixModern);
+						}
+					}
+				} else {
+					if ( [[[%c(UIDevice) currentDevice] model] rangeOfString:@"iPad"].location == NSNotFound ) {
+						%init(floatingDockHomeScreenLayoutFixLegacy);
+						%init(floatingDockHomeScreenLandscapeLayoutFixLegacy);
+						if ( [[%c(BSPlatform) sharedInstance] homeButtonType] != 2 ) {
+							%init(floatingDockLayoutSmallScreenFixLegacy);
+						}
+					}
+				}
 			} else {
-				%init(iOSRecents);
+				%init(iPhoneDockMaximumItems);
+				%init(iPhoneDockBackground);
+				%init(iPhoneDockHomeScreenLayoutFix);
+				if ( @available(iOS 13, *) ) {
+				} else {
+					%init(iPhoneDockMaximumItemsLayoutFixLegacy);
+				}
 			}
-		}
-		if ( kIsiOS13AndUp ) {
-			%init(iOS13);
 		} else {
-			%init(iOS12);
+			%init(noDock);
 		}
-		%init(_ungrouped);
 	}
 }
+
+
+

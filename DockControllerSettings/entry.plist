@@ -5,6 +5,7 @@
 		label = "Dock Controller";
 		bundle = DockControllerSettings;
 		detail = DockControllerRootSettings;
+		id = DockController;
 		icon = icons/DockController.png;
 	};
 }

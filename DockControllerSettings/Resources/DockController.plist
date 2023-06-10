@@ -1,0 +1,229 @@
+{
+	title = "Dock Controller";
+	items = (
+		{
+			cell = PSSwitchCell;
+			label = ENABLE_TWEAK;
+			key = enableTweak;
+			id = enableTweak;
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			icon = "icons/DockController.png";
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
+			label = "DOCK_TYPE";
+			key = "dockTypeGroup";
+			id = "dockTypeGroup";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "dockType";
+			id = "dockType";
+			default = 3;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+				3,
+			);
+			validTitles = (
+				Disabled,
+				iPhone,
+				iPad,
+			);
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
+			label = "DOCK_BACKGROUND";
+			key = "dockBackgroundGroup";
+			id = "dockBackgroundGroup";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "dockBackgroundType";
+			id = "dockBackgroundType";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				0,
+				1,
+			);
+			validTitles = (
+				Disabled,
+				Default,
+			);
+			height = 55;
+		},
+		{
+			cell = PSSegmentCell;
+			key = "dockBackgroundAppearanceStyle";
+			id = "dockBackgroundAppearanceStyle";
+			default = 999;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				999,
+				1,
+				2,
+				96,
+			);
+			validTitles = (
+				Dynamic,
+				Light,
+				Dark,
+				Reversed,
+			);
+			height = 55;
+			pl_filter = {
+				CoreFoundationVersion = (
+					"1665.15"
+				);
+			};
+		},
+		{
+			cell = PSGroupCell;
+			key = "iPadDockGroup";
+			id = "iPadDockGroup";
+		},
+		{
+			cell = PSSwitchCell;
+			label = "DOCK_DIVIDER";
+			key = "iPadDockShowDivider";
+			id = "iPadDockShowDivider";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
+			label = "GESTURE_TO_SHOW_DOCK_IN_APPS";
+			key = "iPadDockGestureToShowInApps";
+			id = "iPadDockGestureToShowInApps";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			pl_filter = {
+				CoreFoundationVersion = (
+					"1556.00"
+				);
+			};
+		},
+		{
+			cell = PSSwitchCell;
+			cellClass = DockControllerSwitchTableCell;
+			label = "SHOW_IN_APP_SWITCHER";
+			key = "iPadDockShowInAppSwitcher";
+			id = "iPadDockShowInAppSwitcher";
+			default = 1;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			pl_filter = {
+				CoreFoundationVersion = (
+					"1556.00"
+				);
+			};
+		},
+		{
+			cell = PSSwitchCell;
+			label = "SHOW_APP_LIBRARY_IN_DOCK";
+			key = "SBAppLibraryInDockEnabled";
+			id = "SBAppLibraryInDockEnabled";
+			default = 1;
+			defaults = com.apple.springboard;
+			PostNotification = "com.apple.springboard-prefsChanged";
+			pl_filter = {
+				CoreFoundationVersion = (
+					"1854"
+				);
+			};
+		},
+		{
+			cell = PSSwitchCell;
+			label = "SHOW_SUGGESTED_AND_RECENT_APPS_IN_DOCK";
+			key = "SBRecentsEnabled";
+			id = "ALLOW_RECENTS";
+			allowMultilineTitleKey = 1;
+			default = 1;
+			defaults = com.apple.springboard;
+			PostNotification = "com.apple.springboard-prefsChanged";
+		},
+		{
+			cell = PSSegmentCell;
+			key = "iPadDockMaximumItemsInRecents";
+			id = "iPadDockMaximumItemsInRecents";
+			default = 3;
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
+			validValues = (
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10
+			);
+			validTitles = (
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10
+			);
+			height = 55;
+		},
+		{
+			cell = PSGroupCell;
+			label = " ";
+		},
+		{
+			cell = PSButtonCell;
+			label = RESET_SETTINGS;
+			action = resetSettings;
+			alignment = center;
+		},
+		{
+			cell = PSGroupCell;
+			label = RELATED_LINKS;
+		},
+		{
+			cell = PSButtonCell;
+			label = SOURCE_CODE;
+			action = sourceCode;
+			icon = "icons/code.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = KNOWN_ISSUES;
+			action = knownIssues;
+			icon = "icons/bug.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = TOMASZ_POLISZUK_AT_BIGBOSS;
+			action = TomaszPoliszukAtBigBoss;
+			icon = "icons/packages.png";
+		},
+		{
+			cell = PSButtonCell;
+			label = TOMASZ_POLISZUK_AT_GITHUB;
+			action = TomaszPoliszukAtGithub;
+			icon = "icons/github.png";
+		},
+	);
+}
