@@ -96,16 +96,17 @@
 			label = "DOCK_DIVIDER";
 			key = "iPadDockShowDivider";
 			id = "iPadDockShowDivider";
+			allowMultilineTitleKey = 1;
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
 		},
 		{
 			cell = PSSwitchCell;
-			cellClass = DockControllerSwitchTableCell;
 			label = "GESTURE_TO_SHOW_DOCK_IN_APPS";
 			key = "iPadDockGestureToShowInApps";
 			id = "iPadDockGestureToShowInApps";
+			allowMultilineTitleKey = 1;
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
@@ -117,10 +118,10 @@
 		},
 		{
 			cell = PSSwitchCell;
-			cellClass = DockControllerSwitchTableCell;
 			label = "SHOW_IN_APP_SWITCHER";
 			key = "iPadDockShowInAppSwitcher";
 			id = "iPadDockShowInAppSwitcher";
+			allowMultilineTitleKey = 1;
 			default = 1;
 			defaults = com.tomaszpoliszuk.dockcontroller;
 			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
@@ -135,6 +136,7 @@
 			label = "SHOW_APP_LIBRARY_IN_DOCK";
 			key = "SBAppLibraryInDockEnabled";
 			id = "SBAppLibraryInDockEnabled";
+			allowMultilineTitleKey = 1;
 			default = 1;
 			defaults = com.apple.springboard;
 			PostNotification = "com.apple.springboard-prefsChanged";
