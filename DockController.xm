@@ -271,18 +271,6 @@ void SettingsChanged() {
 }
 %end
 
-%hook SBRootFolderDockIconListView
-- (CGSize)iconSpacing {
-	CGSize origValue = %orig;
-	if ( [self visibleIcons].count > 4 ) {
-		double newSize = [[%c(UIScreen) mainScreen] bounds].size.width / 40;
-		origValue.width = newSize;
-		origValue.height = newSize;
-	}
-	return origValue;
-}
-%end
-
 %end
 
 
@@ -709,6 +697,24 @@ void SettingsChanged() {
 
 
 
+%group iPhoneDockMaximumItemsLayoutFixBelow15
+
+%hook SBRootFolderDockIconListView
+- (CGSize)iconSpacing {
+	CGSize origValue = %orig;
+	if ( [self visibleIcons].count > 4 ) {
+		double newSize = [[%c(UIScreen) mainScreen] bounds].size.width / 40;
+		origValue.width = newSize;
+		origValue.height = newSize;
+	}
+	return origValue;
+}
+%end
+
+%end
+
+
+
 %group iPhoneDockMaximumItemsLayoutFixLegacy
 
 %hook SBRootFolderDockIconListView
@@ -766,6 +772,10 @@ void SettingsChanged() {
 				%init(iPhoneDockMaximumItems);
 				%init(iPhoneDockBackground);
 				%init(iPhoneDockHomeScreenLayoutFix);
+				if ( @available(iOS 15, *) ) {
+				} else {
+					%init(iPhoneDockMaximumItemsLayoutFixBelow15);
+				}
 				if ( @available(iOS 13, *) ) {
 				} else {
 					%init(iPhoneDockMaximumItemsLayoutFixLegacy);
