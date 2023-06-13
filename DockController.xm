@@ -414,15 +414,6 @@ void SettingsChanged() {
 
 %group floatingDockGestureInAppsModern
 
-%hook SBHomeGestureSettings
-- (bool)isHomeGestureEnabled {
-	if ( [[%c(SBLockScreenManager) sharedInstanceIfExists] isLockScreenVisible] ) {
-		return NO;
-	}
-	return iPadDockGestureToShowInApps;
-}
-%end
-
 %hook SBFluidSwitcherViewController
 - (bool)isFloatingDockGesturePossible {
 	if ( [[%c(SBMainSwitcherViewController) sharedInstanceIfExists] isAnySwitcherVisible] ) {
@@ -431,6 +422,21 @@ void SettingsChanged() {
 	return iPadDockGestureToShowInApps;
 }
 - (bool)isFloatingDockSupported {
+	return iPadDockGestureToShowInApps;
+}
+%end
+
+%end
+
+
+
+%group floatingDockGestureInAppsModernForHome
+
+%hook SBHomeGestureSettings
+- (bool)isHomeGestureEnabled {
+	if ( [[%c(SBLockScreenManager) sharedInstanceIfExists] isLockScreenVisible] ) {
+		return NO;
+	}
 	return iPadDockGestureToShowInApps;
 }
 %end
@@ -748,6 +754,9 @@ void SettingsChanged() {
 				%init(floatingDockBackground);
 				if ( @available(iOS 13, *) ) {
 					%init(floatingDockGestureInAppsModern);
+					if ( [[%c(BSPlatform) sharedInstance] homeButtonType] != 2 ) {
+						%init(floatingDockGestureInAppsModernForHome);
+					}
 					%init(floatingDockInAppSwitcherModern);
 					if ( @available(iOS 14, *) ) {
 					} else {
