@@ -16,6 +16,7 @@
 
 
 #import "system.h"
+#import <ColorPickerWell/UIColor+ColorPickerWell.h>
 
 #define kPackage @"com.tomaszpoliszuk.dockcontroller"
 #define kSettingsChanged @"com.tomaszpoliszuk.dockcontroller.settingschanged"
@@ -23,6 +24,7 @@
 @interface DockControllerRootSettings : PSListController
 @property (nonatomic, strong) NSMutableArray *backgroundSpecifiers;
 @property (nonatomic, strong) NSMutableArray *nativeBackgroundSpecifiers;
+@property (nonatomic, strong) NSMutableArray *customBackgroundSpecifiers;
 @property (nonatomic, strong) NSMutableArray *iPadDockSpecifiers;
 @property (nonatomic, strong) NSMutableArray *iPadDockRecentSpecifiers;
 @end
@@ -33,7 +35,14 @@
 - (void)_DC_updateBackgroundUserInterfaceStyle;
 @end
 
+@interface SBFloatingDockPlatterView (DockController)
+- (void)_DC_createBackgroundColorView;
+- (void)_DC_updateBackgroundColorView;
+@end
+
 @interface SBDockView (DockController)
 - (void)_DC_updateBackgroundVisualStyling;
 - (void)_DC_updateBackgroundUserInterfaceStyle;
+- (void)_DC_createBackgroundColorView;
+- (void)_DC_updateBackgroundColorView;
 @end

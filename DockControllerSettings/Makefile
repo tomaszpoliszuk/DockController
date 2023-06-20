@@ -6,6 +6,7 @@ $(BUNDLE_NAME)_FILES = DockControllerRootSettings.mm
 $(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 $(BUNDLE_NAME)_FRAMEWORKS = UIKit
 $(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences FrontBoardServices SpringBoardServices
+$(BUNDLE_NAME)_EXTRA_FRAMEWORKS = ColorPickerWell
 $(BUNDLE_NAME)_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/bundle.mk

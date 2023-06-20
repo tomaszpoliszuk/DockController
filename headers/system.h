@@ -131,6 +131,11 @@ struct SBIconCoordinate {
 - (bool)isAnySwitcherVisible;
 @end
 
+@interface UIView ()
+@property (setter=_setCornerRadius:, nonatomic) double _cornerRadius;
+@property (setter=_setContinuousCornerRadius:, nonatomic) double _continuousCornerRadius;
+@end
+
 @interface PSListController ()
 - (bool)containsSpecifier:(id)arg1;
 @end

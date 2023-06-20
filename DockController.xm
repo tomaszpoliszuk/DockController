@@ -19,6 +19,8 @@
 #import <dlfcn.h>
 #import <IconSupport/ISIconSupport.h>
 
+UIView * backgroundColorView;
+
 static bool enableTweak;
 
 static long long dockType;
@@ -28,6 +30,9 @@ static bool isFloatingDock;
 
 static long long dockBackgroundAppearanceStyle;
 static long long dockBackgroundType;
+
+static NSString *dockBackgroundColor;
+static UIColor *dockBackgroundColorUIColor;
 
 static bool iPadDockShowDivider;
 
@@ -51,6 +56,9 @@ void SettingsChanged() {
 	dockBackgroundType = [([tweakSettings valueForKey:@"dockBackgroundType"] ?: @(1)) integerValue];
 
 	dockBackgroundAppearanceStyle = [([tweakSettings valueForKey:@"dockBackgroundAppearanceStyle"] ?: @(999)) integerValue];
+
+	dockBackgroundColor = [tweakSettings objectForKey:@"dockBackgroundColor"];
+	dockBackgroundColorUIColor = [UIColor _CPW_colorFromString:dockBackgroundColor];
 
 	iPadDockShowDivider = [([tweakSettings objectForKey:@"iPadDockShowDivider"] ?: @(YES)) boolValue];
 
@@ -313,6 +321,7 @@ void SettingsChanged() {
 	SBFloatingDockPlatterView *mainPlatterView = [self mainPlatterView];
 	UIView *backgroundView = [mainPlatterView backgroundView];
 	[backgroundView setHidden:(dockBackgroundType != 1)];
+	[backgroundColorView setHidden:(dockBackgroundType != 2)];
 	[self _DC_updateBackgroundUserInterfaceStyle];
 }
 %new
@@ -341,9 +350,50 @@ void SettingsChanged() {
 	%orig;
 	[self _DC_updateBackgroundUserInterfaceStyle];
 }
+- (void)layoutSubviews {
+	%orig;
+	backgroundColorView.frame = [self mainPlatterView].bounds;
+}
 %end
 
 %hook SBFloatingDockPlatterView
+%new
+- (void)_DC_createBackgroundColorView {
+	backgroundColorView = [[UIView alloc] initWithFrame:[self backgroundView].bounds];
+	backgroundColorView.translatesAutoresizingMaskIntoConstraints = false;
+	backgroundColorView.layer.masksToBounds = true;
+	[self insertSubview:backgroundColorView atIndex:0];
+	if ( @available(iOS 13, *) ) {
+		[backgroundColorView.topAnchor    constraintEqualToAnchor: self.topAnchor    ].active = true;
+		[backgroundColorView.bottomAnchor constraintEqualToAnchor: self.bottomAnchor ].active = true;
+		[backgroundColorView.leftAnchor   constraintEqualToAnchor: self.leftAnchor   ].active = true;
+		[backgroundColorView.rightAnchor  constraintEqualToAnchor: self.rightAnchor  ].active = true;
+	}
+	backgroundColorView._cornerRadius = [self backgroundView]._cornerRadius;
+	backgroundColorView._continuousCornerRadius = [self backgroundView]._continuousCornerRadius;
+	[self _DC_updateBackgroundColorView];
+}
+%new
+- (void)_DC_updateBackgroundColorView {
+	backgroundColorView.backgroundColor = dockBackgroundColorUIColor;
+	backgroundColorView._cornerRadius = [self backgroundView]._cornerRadius;
+	backgroundColorView._continuousCornerRadius = [self backgroundView]._continuousCornerRadius;
+}
+- (id)initWithFrame:(CGRect)arg1 {
+	id origValue = %orig;
+	if ( self ) {
+		[self _DC_createBackgroundColorView];
+	}
+	return origValue;
+}
+- (void)layoutSubviews {
+	%orig;
+	[self _DC_updateBackgroundColorView];
+}
+- (void)setHasShadow:(bool)arg1 {
+	%orig;
+	[self _DC_updateBackgroundColorView];
+}
 - (void)setBackgroundView:(UIView *)backgroundView {
 	%orig;
 	backgroundView.clipsToBounds = YES;
@@ -366,6 +416,7 @@ void SettingsChanged() {
 }
 - (void)willMoveToWindow:(id)arg1 {
 	%orig;
+	[self _DC_createBackgroundColorView];
 	[self _DC_updateBackgroundVisualStyling];
 }
 - (void)_dynamicUserInterfaceTraitDidChange {
@@ -377,6 +428,30 @@ void SettingsChanged() {
 	[self _DC_updateBackgroundVisualStyling];
 }
 %new
+- (void)_DC_createBackgroundColorView {
+	UIView *backgroundView;
+	if ( [self respondsToSelector:@selector(backgroundView)] ) {
+		backgroundView = [self backgroundView];
+	} else {
+		backgroundView = [self valueForKey:@"_backgroundView"];
+	}
+	if ( !backgroundColorView ) {
+		backgroundColorView = [[UIView alloc] initWithFrame:backgroundView.frame];
+	}
+	backgroundColorView.translatesAutoresizingMaskIntoConstraints = NO;
+	backgroundColorView.layer.masksToBounds = YES;
+	[self insertSubview:backgroundColorView atIndex:0];
+	if ( @available(iOS 13, *) ) {
+		[backgroundColorView.topAnchor    constraintEqualToAnchor: backgroundView.topAnchor    ].active = YES;
+		[backgroundColorView.bottomAnchor constraintEqualToAnchor: backgroundView.bottomAnchor ].active = YES;
+		[backgroundColorView.leftAnchor   constraintEqualToAnchor: backgroundView.leftAnchor   ].active = YES;
+		[backgroundColorView.rightAnchor  constraintEqualToAnchor: backgroundView.rightAnchor  ].active = YES;
+	}
+	backgroundColorView._cornerRadius = backgroundView._cornerRadius;
+	backgroundColorView._continuousCornerRadius = backgroundView._continuousCornerRadius;
+	[self _DC_updateBackgroundColorView];
+}
+%new
 - (void)_DC_updateBackgroundVisualStyling {
 	UIView *backgroundView;
 	if ( [self respondsToSelector:@selector(backgroundView)] ) {
@@ -386,10 +461,22 @@ void SettingsChanged() {
 	}
 	UIView *highlightView = [self valueForKey:@"_highlightView"];
 	backgroundView.layer.masksToBounds = YES;
+	backgroundColorView.layer.masksToBounds = YES;
 
 	[backgroundView setHidden:(dockBackgroundType != 1)];
 	[highlightView setHidden:(dockBackgroundType != 1)];
+	[backgroundColorView setHidden:(dockBackgroundType != 2)];
 	[self _DC_updateBackgroundUserInterfaceStyle];
+	[self _DC_updateBackgroundColorView];
+
+	CGRect backgroundViewFrame = backgroundView.frame;
+
+	backgroundColorView.layer.cornerRadius = backgroundView.layer.cornerRadius;
+	backgroundColorView._continuousCornerRadius = backgroundView._continuousCornerRadius;
+
+	backgroundView.frame = backgroundViewFrame;
+	backgroundColorView.frame = backgroundViewFrame;
+
 }
 %new
 - (void)_DC_updateBackgroundUserInterfaceStyle {
@@ -407,6 +494,19 @@ void SettingsChanged() {
 			[backgroundView setOverrideUserInterfaceStyle:dockBackgroundAppearanceStyle];
 		}
 	}
+}
+%new
+- (void)_DC_updateBackgroundColorView {
+	UIView *backgroundView;
+	if ( [self respondsToSelector:@selector(backgroundView)] ) {
+		backgroundView = [self backgroundView];
+	} else {
+		backgroundView = [self valueForKey:@"_backgroundView"];
+	}
+	backgroundColorView.frame = backgroundView.frame;
+	backgroundColorView.backgroundColor = dockBackgroundColorUIColor;
+	backgroundColorView._cornerRadius = backgroundView._cornerRadius;
+	backgroundColorView._continuousCornerRadius = backgroundView._continuousCornerRadius;
 }
 %end
 

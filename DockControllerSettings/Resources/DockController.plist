@@ -53,10 +53,12 @@
 			validValues = (
 				0,
 				1,
+				2,
 			);
 			validTitles = (
 				Disabled,
 				Default,
+				Custom,
 			);
 			height = 55;
 		},
@@ -85,6 +87,16 @@
 					"1665.15"
 				);
 			};
+		},
+		{
+			cell = PSStaticTextCell;
+			cellClass = "CPColorPickerTableCell";
+			label = "Background Color";
+			key = "dockBackgroundColor";
+			id = "dockBackgroundColor";
+			supportsAlpha = "1";
+			defaults = com.tomaszpoliszuk.dockcontroller;
+			PostNotification = "com.tomaszpoliszuk.dockcontroller.settingschanged";
 		},
 		{
 			cell = PSGroupCell;

@@ -23,6 +23,7 @@
 		_specifiers = [NSMutableArray new];
 		_backgroundSpecifiers = [NSMutableArray new];
 		_nativeBackgroundSpecifiers = [NSMutableArray new];
+		_customBackgroundSpecifiers = [NSMutableArray new];
 		_iPadDockSpecifiers = [NSMutableArray new];
 		_iPadDockRecentSpecifiers = [NSMutableArray new];
 		NSMutableArray *removeSpecifiers = [NSMutableArray new];
@@ -42,6 +43,9 @@
 			if ( [key isEqual:@"dockBackgroundAppearanceStyle"] ) {
 				[_nativeBackgroundSpecifiers addObject:specifier];
 			}
+			if ( [key isEqual:@"dockBackgroundColor"] ) {
+				[_customBackgroundSpecifiers addObject:specifier];
+			}
 			if ( ( [key hasPrefix:@"iPadDock"] || [key isEqual:@"SBAppLibraryInDockEnabled"] || [key isEqual:@"SBRecentsEnabled"] ) && ![key isEqual:@"iPadDockMaximumItemsInRecents"] ) {
 				[_iPadDockSpecifiers addObject:specifier];
 			}
@@ -53,6 +57,7 @@
 		if ( [[self readPreferenceValue:dockType] isEqual:@"0"] ) {
 			[removeSpecifiers addObjectsFromArray:_backgroundSpecifiers];
 			[removeSpecifiers addObjectsFromArray:_nativeBackgroundSpecifiers];
+			[removeSpecifiers addObjectsFromArray:_customBackgroundSpecifiers];
 			[removeSpecifiers addObjectsFromArray:_iPadDockSpecifiers];
 			[removeSpecifiers addObjectsFromArray:_iPadDockRecentSpecifiers];
 		} else if ( [[self readPreferenceValue:dockType] isEqual:@"1"] ) {
@@ -65,6 +70,11 @@
 		}
 		PSSpecifier *dockBackgroundType = [self specifierForID:@"dockBackgroundType"];
 		if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"0"] ) {
+			[removeSpecifiers addObjectsFromArray:_nativeBackgroundSpecifiers];
+			[removeSpecifiers addObjectsFromArray:_customBackgroundSpecifiers];
+		} else if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"1"] ) {
+			[removeSpecifiers addObjectsFromArray:_customBackgroundSpecifiers];
+		} else if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"2"] ) {
 			[removeSpecifiers addObjectsFromArray:_nativeBackgroundSpecifiers];
 		}
 		[_specifiers removeObjectsInArray:removeSpecifiers];
@@ -79,9 +89,16 @@
 	if ( specifier == dockBackgroundType) {
 		if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"0"] ) {
 			[self removeContiguousSpecifiers:_nativeBackgroundSpecifiers animated:YES];
+			[self removeContiguousSpecifiers:_customBackgroundSpecifiers animated:YES];
 		} else if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"1"] ) {
+			[self removeContiguousSpecifiers:_customBackgroundSpecifiers animated:YES];
 			if ( ![self containsSpecifier:[self specifierForID:@"dockBackgroundAppearanceStyle"]] ) {
 				[self insertContiguousSpecifiers:_nativeBackgroundSpecifiers afterSpecifierID:@"dockBackgroundType" animated:YES];
+			}
+		} else if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"2"] ) {
+			[self removeContiguousSpecifiers:_nativeBackgroundSpecifiers animated:YES];
+			if ( ![self containsSpecifier:[self specifierForID:@"dockBackgroundColor"]] ) {
+				[self insertContiguousSpecifiers:_customBackgroundSpecifiers afterSpecifierID:@"dockBackgroundType" animated:YES];
 			}
 		}
 	}
@@ -98,6 +115,7 @@
 		if ( [[self readPreferenceValue:dockType] isEqual:@"0"] ) {
 			[self removeContiguousSpecifiers:_backgroundSpecifiers animated:YES];
 			[self removeContiguousSpecifiers:_nativeBackgroundSpecifiers animated:YES];
+			[self removeContiguousSpecifiers:_customBackgroundSpecifiers animated:YES];
 			[self removeContiguousSpecifiers:_iPadDockSpecifiers animated:YES];
 			[self removeContiguousSpecifiers:_iPadDockRecentSpecifiers animated:YES];
 		} else if ( [[self readPreferenceValue:dockType] isEqual:@"1"] ) {
@@ -109,6 +127,11 @@
 					[self insertContiguousSpecifiers:_nativeBackgroundSpecifiers atEndOfGroup:2 animated:YES];
 				}
 			}
+			if ( ![self containsSpecifier:[self specifierForID:@"dockBackgroundColor"]] ) {
+				if ( [[self readPreferenceValue:[self specifierForID:@"dockBackgroundType"]] isEqual:@"2"] ) {
+					[self insertContiguousSpecifiers:_customBackgroundSpecifiers atEndOfGroup:2 animated:YES];
+				}
+			}
 			[self removeContiguousSpecifiers:_iPadDockSpecifiers animated:YES];
 			[self removeContiguousSpecifiers:_iPadDockRecentSpecifiers animated:YES];
 		} else if ( [[self readPreferenceValue:dockType] isEqual:@"3"] ) {
@@ -118,6 +141,11 @@
 			if ( ![self containsSpecifier:[self specifierForID:@"dockBackgroundAppearanceStyle"]] ) {
 				if ( [[self readPreferenceValue:[self specifierForID:@"dockBackgroundType"]] isEqual:@"1"] ) {
 					[self insertContiguousSpecifiers:_nativeBackgroundSpecifiers atEndOfGroup:2 animated:YES];
+				}
+			}
+			if ( ![self containsSpecifier:[self specifierForID:@"dockBackgroundColor"]] ) {
+				if ( [[self readPreferenceValue:[self specifierForID:@"dockBackgroundType"]] isEqual:@"2"] ) {
+					[self insertContiguousSpecifiers:_customBackgroundSpecifiers atEndOfGroup:2 animated:YES];
 				}
 			}
 			if ( ![self containsSpecifier:[self specifierForID:@"iPadDockGroup"]] ) {
