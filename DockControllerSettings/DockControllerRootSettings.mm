@@ -65,7 +65,7 @@
 		}
 		PSSpecifier *dockBackgroundType = [self specifierForID:@"dockBackgroundType"];
 		if ( [[self readPreferenceValue:dockBackgroundType] isEqual:@"0"] ) {
-			[removeSpecifiers addObject:[self specifierForID:@"dockBackgroundAppearanceStyle"]];
+			[removeSpecifiers addObjectsFromArray:_nativeBackgroundSpecifiers];
 		}
 		[_specifiers removeObjectsInArray:removeSpecifiers];
 	}
