@@ -16,6 +16,8 @@
 
 
 #import "headers/DockController.h"
+#import <dlfcn.h>
+#import <IconSupport/ISIconSupport.h>
 
 static bool enableTweak;
 
@@ -745,6 +747,13 @@ void SettingsChanged() {
 	);
 	if ( enableTweak ) {
 		%init(dockEnabledOrNot);
+		if ( @available(iOS 13, *) ) {
+		} else {
+			if ( [[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib"] ) {
+				dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_NOW);
+				[[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"dockcontroller"];
+			}
+		}
 		if ( isDockEnabled ) {
 			%init(iPhoneOriPadDock);
 			if ( isFloatingDock ) {

@@ -1,5 +1,5 @@
 Package: com.tomaszpoliszuk.dockcontroller
-Depends: firmware (>= 11.0), mobilesubstrate, preferenceloader
+Depends: firmware (>= 11.0), mobilesubstrate, preferenceloader, com.chpwn.iconsupport | firmware (>= 13.0)
 Name: Dock Controller
 Version: 2.0.2
 Architecture: iphoneos-arm
